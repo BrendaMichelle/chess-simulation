@@ -1,0 +1,34 @@
+package chess;
+
+public class Piece {
+	private String splayer; //player "black" versus player "white"
+	 int moves_made; //the number of moves made in the game
+	 String piece_name;
+	 private boolean moved; // For Castling or En Passant
+	 int piece_xCoordinate, piece_yCoordinate;
+	
+	public Piece (String splayer, String player_piece) {
+		this.splayer = splayer;
+		this.piece_name = player_piece;
+	}
+	
+	public boolean equals(Object o) {
+		if(o != null || !(o instanceof Piece)) {
+			return false;
+		}
+		return true;
+	}
+	
+	public String getPlayer() {
+		return splayer;
+	}
+	
+	public boolean getMoved() {
+		return moved;
+	}
+	
+	public void setMoved(boolean cond) {
+		moved = cond;
+	}
+
+}

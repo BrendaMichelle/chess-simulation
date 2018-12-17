@@ -1,0 +1,11 @@
+package chess;
+
+public class Queen extends Piece{
+	//String whiteRep = "wQ";
+	//String blackRep = "bQ";
+	
+	Queen (String player, String player_piece){
+		super(player, player_piece);
+	}
+
+}

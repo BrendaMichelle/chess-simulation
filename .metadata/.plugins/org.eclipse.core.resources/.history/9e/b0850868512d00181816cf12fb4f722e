@@ -1,0 +1,62 @@
+/**
+ * 
+ */
+package chess;
+
+/**
+ * @author royjacome
+ *
+ */
+public class Rook extends Piece implements PieceAttribute {
+	
+	public Rook(int player, boolean moved, int x, int y) {
+		super(player, moved);
+		this.x = x;
+		this.y = y;
+	}
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#eating(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int x, int y) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#moving(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean moving(BoardCell[][] chessBoard, int x, int y) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#checkValidMove(int, int)
+	 */
+	@Override
+	public boolean checkValidMove(int x, int y) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#incrementAttackPath(BoardCell[][] chessBoard)
+	 */
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		// TODO Auto-generated method stub
+		return;
+	}
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#decrementAttackPath(BoardCell[][] chessBoard)
+	 */
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		// TODO Auto-generated method stub
+		return;
+	}
+
+}

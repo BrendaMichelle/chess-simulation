@@ -1,0 +1,46 @@
+package chess;
+
+public class Queen extends Piece implements PieceAttribute{
+	//String whiteRep = "wQ";
+	//String blackRep = "bQ";
+	
+	Queen (String player, String player_piece, int xCoordinate, int yCoordinate, BoardCell[][] board){
+		super(player, player_piece);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+		
+		incrementAttackPath(board);
+		setAttackPathVisible(false);
+	}
+
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean moving(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean checkValidMove(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

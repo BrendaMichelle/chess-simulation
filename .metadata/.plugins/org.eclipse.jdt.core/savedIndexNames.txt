@@ -1,0 +1,3 @@
+INDEX VERSION 1.130+/Users/royjacome/Documents/Code Files & Course Projects/Java Files/Software Methodology/cs213-chess/.metadata/.plugins/org.eclipse.jdt.core
+85642719.index
+1828089775.index

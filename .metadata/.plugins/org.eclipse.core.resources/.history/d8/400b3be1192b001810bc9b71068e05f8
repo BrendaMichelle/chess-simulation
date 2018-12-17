@@ -1,0 +1,13 @@
+package chess;
+
+public class Queen extends Piece{
+	//String whiteRep = "wQ";
+	//String blackRep = "bQ";
+	
+	Queen (String player, String player_piece, int xCoordinate, int yCoordinate){
+		super(player, player_piece);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+	}
+
+}

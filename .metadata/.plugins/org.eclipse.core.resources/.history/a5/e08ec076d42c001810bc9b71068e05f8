@@ -1,0 +1,725 @@
+package chess;
+
+public class Board {
+	private static BoardCell[][] board = new BoardCell [8][8]; 
+	
+	public void initialize_board() {
+		for(int i = 0; i < board.length; i++){
+            for(int j = 0; j < board.length; j++){
+                Board.board[i][j] = new BoardCell();
+            }
+        }
+	}
+	
+	//need to insert the other pieces still
+	
+	//When setting up board, initialize the pieces in the order: Pawns, Bishop, Knights, Rooks, Kings, Queens
+	public void set_up_board() {
+		//Piece a = new Piece (1, "bQ");
+		
+		// Pawns
+		/*for (int i = 0; i < 8; i++) { 
+			board[1][i].piece = new Pawn("black", "bp", 1, i, board); //black pawns
+			board[6][i].piece = new Pawn("white", "wp", 6, i, board); //white pawns
+		}
+		*/
+			
+		
+		// Bishops
+		//board[0][2].piece = new Bishop("black", "bB", 0, 2, board);
+		board[4][3].piece = new King ("white", "wK", 4, 3, board);
+		board[1][6].piece = new Bishop("black", "bB", 1, 6, board);
+		//board[7][2].piece = new Bishop("white", "wB", 7, 2, board);
+		//board[7][5].piece = new Bishop("white", "wB", 7, 5, board);
+		
+		//Knights
+		
+		//Rooks
+		//board[0][0].piece = new Rook("black", "bR", 0, 0, board);
+		//board[0][7].piece = new Rook("black", "bR", 0, 7, board);
+		//board[7][0].piece = new Rook("white", "wR", 7, 0, board);
+		//board[7][7].piece = new Rook("white", "wR", 7, 7, board);
+		
+		// Kings
+		//board[0][4].piece = new King ("black", "bK", 0, 4, board);
+		
+		// Queens
+		//board[0][3].piece = new Queen("black", "bQ", 0, 3, board);
+		//board[7][3].piece = new Queen("white", "wQ", 7, 3, board);
+		
+		((Bishop)board[1][6].piece).moving(board, 0, 5);
+		//((King)board[4][3].piece).moving(board, 5, 2);
+		
+		
+		//((King)board[0][4].piece).moving(board, 0, 2);		// Castle black queen side
+		//((King)board[0][4].piece).moving(board, 0, 6);		// Castle black king side
+		//((King)board[7][4].piece).moving(board, 7, 6);		// Castle white king side (7,5, white bishop needs to be commented out)
+		//((Rook)board[7][0].piece).moving(board, 7, 3);
+		//((Rook)board[7][3].piece).moving(board, 7, 0);
+		//((King)board[7][4].piece).moving(board, 7, 2);		// Castle white queen side (7,2 white bishop needs to be commented out)
+		//((King)board[7][4].piece).moving(board, 7, 3);
+		//((King)board[7][3].piece).moving(board, 7, 4);
+		//((King)board[7][4].piece).moving(board, 7, 2);
+		printAttackPaths();
+	}
+	
+	public void printAttackPaths() {
+		for(int i = 0 ; i < board.length ; i++) {
+			for(int j = 0 ; j < board.length ; j++) {
+				System.out.print("w" + board[i][j].whiteAttackCell + "b" + board[i][j].blackAttackCell + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
+	
+	public void print_board() {
+		int [] arr = {1, 2, 3, 4, 5, 6, 7, 8}; //the row numbers
+		char [] arrc = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}; //the column letters
+		
+		for(int i = 0; i < board.length; i++){
+			for(int j = 0; j < board.length; j++){
+                if(board[i][j].empty) { 
+                		if(((i%2 == 0) && (j%2 == 0)) || ((i%2 != 0) && (j%2 != 0 )))  {
+                			System.out.print("   ");
+                		}
+                	if(((i%2 == 0) && (j%2 != 0 )) || ((i%2 != 0) && (j%2 == 0 )) ) {
+    					System.out.print("## ");
+    				}
+    			}
+    				else if (board[i][j].empty == false ) {
+    					System.out.print(board[i][j].piece.piece_name + " ");
+    				}
+            }
+			System.out.println(" " + arr[i]);
+        }
+		for(int i = 0; i < arrc.length; i++) {
+			System.out.print(arrc[i] + "  ");
+		}
+	}
+	
+	public static boolean whiteKingInCheck(BoardCell[][] chessBoard, King whiteKing) {
+		
+		if(whiteKing.testWhiteKingCheck(chessBoard, whiteKing) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean blackKingInCheck(BoardCell[][] chessBoard, int blackKingX, int blackKingY) {
+		
+		if(((King)chessBoard[blackKingX][blackKingY].piece).testBlackKingCheck(chessBoard, blackKingX, blackKingY)) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static void prepareUpdatingBoard(int pieceCurrentX, int pieceCurrentY, int pieceNextX, int pieceNextY) {		// Decrements all attack Paths that a piece is in and its next position
+		
+		decrementCurrentPaths(pieceCurrentX, pieceCurrentY);
+		decrementNextPaths(pieceNextX, pieceNextY);
+	}
+	
+	public static void updateBoardAttackPaths(int piecePrevX, int piecePrevY, int pieceCurrentX, int pieceCurrentY) {		// Updates the board's attack paths when a piece moves to a new position
+		
+		incrementPreviousPaths(piecePrevX, piecePrevY);
+		incrementUpdatedPaths(pieceCurrentX, pieceCurrentY);
+	}
+	
+	public static void decrementCurrentPaths(int currentX, int currentY) {
+		
+		Piece piece = null;
+		
+		int decrementCurrentX = currentX;
+		int decrementCurrentY = currentY;
+		
+		decrementCurrentX--;
+		
+		while(decrementCurrentX > -1) {					// Check all cells to the left of piece
+			
+			if(!board[decrementCurrentX][currentY].empty) {
+				piece = board[decrementCurrentX][currentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementCurrentX--;
+		}
+		
+		piece = null;
+		decrementCurrentX = currentX;
+		decrementCurrentX++;
+		
+		while(decrementCurrentX < 8) {					// Check all cells to the right of the piece
+			
+			if(!board[decrementCurrentX][currentY].empty) {
+				piece = board[decrementCurrentX][currentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementCurrentX++;
+		}
+		
+		piece = null;
+		decrementCurrentX = currentX;
+		decrementCurrentY--;
+		
+		while(decrementCurrentY > -1) {					// Check all cells below the piece
+			
+			if(!board[currentX][decrementCurrentY].empty) {
+				piece = board[currentX][decrementCurrentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementCurrentY--;
+		}
+		
+		piece = null;
+		decrementCurrentY = currentY;
+		decrementCurrentY++;
+		
+		while(decrementCurrentY < 8) {					// Check all above the piece
+			
+			if(!board[currentX][decrementCurrentY].empty) {
+				piece = board[currentX][decrementCurrentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementCurrentY++;
+		}
+		
+		piece = null;
+		decrementCurrentY = currentY;
+		decrementCurrentX--;
+		decrementCurrentY++;
+		
+		while(decrementCurrentX > -1 && decrementCurrentY < 8) {		// Check all cells top left of piece
+			
+			if(!board[decrementCurrentX][decrementCurrentY].empty) {
+				piece = board[decrementCurrentX][decrementCurrentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementCurrentX--;
+			decrementCurrentY++;
+		}
+		
+		piece = null;
+		decrementCurrentX = currentX;
+		decrementCurrentY = currentY;
+		decrementCurrentX++;
+		decrementCurrentY++;
+		
+		while(decrementCurrentX < 8 && decrementCurrentY < 8) {		// Check all cells top right of piece
+			
+			if(!board[decrementCurrentX][decrementCurrentY].empty) {
+				piece = board[decrementCurrentX][decrementCurrentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			
+			decrementCurrentX++;
+			decrementCurrentY++;
+		}
+		
+		piece = null;
+		decrementCurrentX = currentX;
+		decrementCurrentY = currentY;
+		decrementCurrentX++;
+		decrementCurrentY--;
+		
+		while(decrementCurrentX < 8 && decrementCurrentY > -1) {		// Check all cells bottom right of piece
+			
+			if(!board[decrementCurrentX][decrementCurrentY].empty) {
+				piece = board[decrementCurrentX][decrementCurrentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			
+			decrementCurrentX++;
+			decrementCurrentY--;
+		}
+		
+		piece = null;
+		decrementCurrentX = currentX;
+		decrementCurrentY = currentY;
+		decrementCurrentX--;
+		decrementCurrentY--;
+		
+		while(decrementCurrentX > -1 && decrementCurrentY > -1) {	// Check all cells bottom left of piece
+			
+			if(!board[decrementCurrentX][decrementCurrentY].empty) {
+				piece = board[decrementCurrentX][decrementCurrentY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			
+			decrementCurrentX--;
+			decrementCurrentY--;
+		}
+	}
+	
+	public static void decrementNextPaths(int nextX, int nextY) {
+		Piece piece = null;
+		
+		int decrementNextX = nextX;
+		int decrementNextY = nextY;
+		
+		decrementNextX--;
+		
+		while(decrementNextX > -1) {					// Check all cells to the left of piece
+			
+			if(!board[decrementNextY][nextY].empty) {
+				piece = board[decrementNextY][nextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementNextX--;
+		}
+		
+		piece = null;
+		decrementNextX = nextX;
+		decrementNextX++;
+		
+		while(decrementNextX < 8) {					// Check all cells to the right of the piece
+			
+			if(!board[decrementNextY][nextY].empty) {
+				piece = board[decrementNextY][nextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementNextX++;
+		}
+		
+		piece = null;
+		decrementNextX = nextX;
+		decrementNextY--;
+		
+		while(decrementNextY > -1) {					// Check all cells below the piece
+			
+			if(!board[nextX][decrementNextY].empty) {
+				piece = board[nextX][decrementNextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementNextY--;
+		}
+		
+		piece = null;
+		decrementNextY = nextY;
+		decrementNextY++;
+		
+		while(decrementNextY < 8) {					// Check all above the piece
+			
+			if(!board[nextX][decrementNextY].empty) {
+				piece = board[nextX][decrementNextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+		
+			decrementNextY++;
+		}
+		
+		piece = null;
+		decrementNextY = nextY;
+		decrementNextX--;
+		decrementNextY++;
+		
+		while(decrementNextX > -1 && decrementNextY < 8) {		// Check all cells top left of piece
+			
+			if(!board[decrementNextX][decrementNextY].empty) {
+				piece = board[decrementNextX][decrementNextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementNextX--;
+			decrementNextY++;
+		}
+		
+		piece = null;
+		decrementNextX = nextX;
+		decrementNextY = nextY;
+		decrementNextX++;
+		decrementNextY++;
+		
+		while(decrementNextX < 8 && decrementNextY < 8) {		// Check all cells top right of piece
+			
+			if(!board[decrementNextX][decrementNextY].empty) {
+				piece = board[decrementNextX][decrementNextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementNextX++;
+			decrementNextY++;
+		}
+		
+		piece = null;
+		decrementNextX = nextX;
+		decrementNextY = nextY;
+		decrementNextX++;
+		decrementNextY--;
+		
+		while(decrementNextX < 8 && decrementNextY > -1) {		// Check all cells bottom right of piece
+			
+			if(!board[decrementNextX][decrementNextY].empty) {
+				piece = board[decrementNextX][decrementNextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementNextX++;
+			decrementNextY--;
+		}
+		
+		piece = null;
+		decrementNextX = nextX;
+		decrementNextY = nextY;
+		decrementNextX--;
+		decrementNextY--;
+		
+		while(decrementNextX > -1 && decrementNextY > -1) {	// Check all cells bottom left of piece
+			
+			if(!board[decrementNextX][decrementNextY].empty) {
+				piece = board[decrementNextX][decrementNextY].piece;
+				decrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			decrementNextX--;
+			decrementNextY--;
+		}
+	}
+	
+	public static void incrementPreviousPaths(int prevX, int prevY) {
+		Piece piece = null;
+		
+		int incrementPrevX = prevX;
+		int incrementPrevY = prevY;
+		
+		incrementPrevX--;
+		
+		while(incrementPrevX > -1) {					// Check all cells to the left of piece
+			
+			if(!board[incrementPrevX][prevY].empty) {
+				piece = board[incrementPrevX][prevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementPrevX--;
+		}
+		
+		piece = null;
+		incrementPrevX = prevX;
+		incrementPrevX++;
+		
+		while(incrementPrevX < 8) {					// Check all cells to the right of the piece
+			
+			if(!board[incrementPrevX][prevY].empty) {
+				piece = board[incrementPrevX][prevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementPrevX++;
+		}
+		
+		piece = null;
+		incrementPrevX = prevX;
+		incrementPrevY--;
+		
+		while(incrementPrevY > -1) {					// Check all cells below the piece
+			
+			if(!board[prevX][incrementPrevY].empty) {
+				piece = board[prevX][incrementPrevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementPrevY--;
+		}
+		
+		piece = null;
+		incrementPrevY = prevY;
+		incrementPrevY++;
+		
+		while(incrementPrevY < 8) {					// Check all below the piece
+			
+			if(!board[prevX][incrementPrevY].empty) {
+				piece = board[prevX][incrementPrevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+		
+			incrementPrevY++;
+		}
+		
+		piece = null;
+		incrementPrevY = prevY;
+		incrementPrevX--;
+		incrementPrevY++;
+		
+		while(incrementPrevX > -1 && incrementPrevY < 8) {		// Check all cells top left of piece
+			
+			if(!board[incrementPrevX][incrementPrevY].empty) {
+				piece = board[incrementPrevX][incrementPrevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementPrevX--;
+			incrementPrevY++;
+		}
+		
+		piece = null;
+		incrementPrevX = prevX;
+		incrementPrevY = prevY;
+		incrementPrevX++;
+		incrementPrevY++;
+		
+		while(incrementPrevX < 8 && incrementPrevY < 8) {		// Check all cells top right of piece
+			
+			if(!board[incrementPrevX][incrementPrevY].empty) {
+				piece = board[incrementPrevX][incrementPrevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementPrevX++;
+			incrementPrevY++;
+		}
+		
+		piece = null;
+		incrementPrevX = prevX;
+		incrementPrevY = prevY;
+		incrementPrevX++;
+		incrementPrevY--;
+		
+		while(incrementPrevX < 8 && incrementPrevY > -1) {		// Check all cells bottom right of piece
+			
+			if(!board[incrementPrevX][incrementPrevY].empty) {
+				piece = board[incrementPrevX][incrementPrevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementPrevX++;
+			incrementPrevY--;
+		}
+		
+		piece = null;
+		incrementPrevX = prevX;
+		incrementPrevY = prevY;
+		incrementPrevX--;
+		incrementPrevY--;
+		
+		while(incrementPrevX > -1 && incrementPrevY > -1) {	// Check all cells bottom left of piece
+			
+			if(!board[incrementPrevX][incrementPrevY].empty) {
+				piece = board[incrementPrevX][incrementPrevY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementPrevX--;
+			incrementPrevY--;
+		}
+	}
+	
+	public static void incrementUpdatedPaths(int newX, int newY) {
+		Piece piece = null;
+		
+		int incrementNewX = newX;
+		int incrementNewY = newY;
+		
+		incrementNewX--;
+		
+		while(incrementNewX > -1) {					// Check all cells to the left of piece
+			
+			if(!board[incrementNewX][newY].empty) {
+				piece = board[incrementNewX][newY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementNewX--;
+		}
+		
+		piece = null;
+		incrementNewX = newX;
+		incrementNewX++;
+		
+		while(incrementNewX < 8) {					// Check all cells to the right of the piece
+			
+			if(!board[incrementNewX][newY].empty) {
+				piece = board[incrementNewX][newY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementNewX++;
+		}
+		
+		piece = null;
+		incrementNewX = newX;
+		incrementNewY--;
+		
+		while(incrementNewY > -1) {					// Check all cells below the piece
+			
+			if(!board[newX][incrementNewY].empty) {
+				piece = board[newX][incrementNewY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementNewY--;
+		}
+		
+		piece = null;
+		incrementNewY = newY;
+		incrementNewY++;
+		
+		while(incrementNewY < 8) {					// Check all above the piece
+			
+			if(!board[newX][incrementNewY].empty) {
+				piece = board[newX][incrementNewY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+		
+			incrementNewY++;
+		}
+		
+		piece = null;
+		incrementNewY = newY;
+		incrementNewX--;
+		incrementNewY++;
+		
+		while(incrementNewX > -1 && incrementNewY < 8) {		// Check all cells top left of piece
+			
+			if(!board[newX][incrementNewY].empty) {
+				piece = board[newX][incrementNewY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementNewX--;
+			incrementNewY++;
+		}
+		
+		piece = null;
+		incrementNewX = newX;
+		incrementNewY = newY;
+		incrementNewX++;
+		incrementNewY++;
+		
+		while(incrementNewX < 8 && incrementNewY < 8) {		// Check all cells top right of piece
+			
+			if(!board[newX][incrementNewY].empty) {
+				piece = board[newX][incrementNewY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementNewX++;
+			incrementNewY++;
+		}
+		
+		piece = null;
+		incrementNewX = newX;
+		incrementNewY = newY;
+		incrementNewX++;
+		incrementNewY--;
+		
+		while(incrementNewX < 8 && incrementNewY > -1) {		// Check all cells bottom right of piece
+			
+			if(!board[newX][incrementNewY].empty) {
+				piece = board[newX][incrementNewY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementNewX++;
+			incrementNewY--;
+		}
+		
+		piece = null;
+		incrementNewX = newX;
+		incrementNewY = newY;
+		incrementNewX--;
+		incrementNewY--;
+		
+		while(incrementNewX > -1 && incrementNewY > -1) {	// Check all cells bottom left of piece
+			
+			if(!board[newX][incrementNewY].empty) {
+				piece = board[newX][incrementNewY].piece;
+				incrementPieceAttackPaths(piece);
+				break;
+			}
+			
+			incrementNewX--;
+			incrementNewY--;
+		}
+	}
+	
+	public static void decrementPieceAttackPaths(Piece currentPiece) {
+		
+		if(currentPiece instanceof King) {
+			((King)currentPiece).decrementAttackPath(board);
+		}
+		else if(currentPiece instanceof Queen) {
+			((Queen)currentPiece).decrementAttackPath(board);
+		}
+		else if(currentPiece instanceof Bishop) {
+			((Bishop)currentPiece).decrementAttackPath(board);
+		}
+		//else if(currentPiece instanceof Knight) {
+		//	((Knight)currentPiece).decrementAttackPath(board);
+		//}
+		else if(currentPiece instanceof Rook) {
+			((Rook)currentPiece).decrementAttackPath(board);
+		}
+		else if(currentPiece instanceof Pawn) {
+			((Pawn)currentPiece).decrementAttackPath(board);
+		}
+		
+		
+	}
+	
+	public static void incrementPieceAttackPaths(Piece currentPiece) {
+		
+		if(currentPiece instanceof King) {
+			((King)currentPiece).incrementAttackPath(board);
+		}
+		else if(currentPiece instanceof Queen) {
+			((Queen)currentPiece).incrementAttackPath(board);
+		}
+		else if(currentPiece instanceof Bishop) {
+			((Bishop)currentPiece).incrementAttackPath(board);
+		}
+		//else if(currentPiece instanceof Knight) {
+		//	((Knight)currentPiece).incrementAttackPath(board);
+		//}
+		else if(currentPiece instanceof Rook) {
+			((Rook)currentPiece).incrementAttackPath(board);
+		}
+		else if(currentPiece instanceof Pawn) {
+			((Pawn)currentPiece).incrementAttackPath(board);
+		}
+	}
+
+}

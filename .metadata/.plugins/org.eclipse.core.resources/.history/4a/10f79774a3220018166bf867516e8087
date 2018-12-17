@@ -1,0 +1,12 @@
+
+package chess;
+
+
+public interface PieceAttribute {
+	// x and y are the destination coordinates that a piece is planning on going to.
+	boolean eating(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate);
+	boolean moving(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate);
+	boolean checkValidMove(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate);
+	void incrementAttackPath(BoardCell[][] chessBoard);
+	void decrementAttackPath(BoardCell[][] chessBoard);
+}

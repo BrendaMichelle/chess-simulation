@@ -1,0 +1,57 @@
+package chess;
+/*
+ * @author BrendaRios
+ * @author royjacome
+ * @since   2018-02-23
+ */
+
+public abstract class Piece {
+	 String splayer; //player "black" versus player "white"
+	 int moves_made = 0; //the number of moves made in the game
+	 String piece_name; //how it's represented on the board
+	 private boolean moved = false; // For Castling or En Passant
+	 private boolean attackPathVisible; 
+	 int piece_xCoordinate, piece_yCoordinate;
+	 boolean used_double_advance = false; //for en passant
+
+	
+	public Piece (String splayer, String player_piece) {
+		this.splayer = splayer;
+		this.piece_name = player_piece;
+	}
+
+	public boolean equals(Object o) {
+		if(o != null || !(o instanceof Piece)) {
+			return false;
+		}
+		return true;
+	}
+	
+	public String getPlayer() {
+		return splayer;
+	}
+	
+	public boolean getMoved() {
+		return moved;
+	}
+	
+	public void setMoved(boolean cond) {
+		moved = cond;
+	}
+
+
+	public boolean getAttackPathVisible() {
+		return attackPathVisible;
+	}
+	
+	public void setAttackPathVisible(boolean cond) {
+		attackPathVisible = cond;
+	}
+	
+	public abstract boolean eating(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate);
+	public abstract boolean moving(Board board, int new_xCoordinate, int new_yCoordinate);
+	public abstract boolean checkValidMove(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate);
+	public abstract void incrementAttackPath(BoardCell[][] chessBoard);
+	public abstract void decrementAttackPath(BoardCell[][] chessBoard);
+
+}

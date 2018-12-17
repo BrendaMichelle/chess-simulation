@@ -1,0 +1,831 @@
+package chess;
+
+public class Queen extends Piece {
+	//String whiteRep = "wQ";
+	//String blackRep = "bQ";
+	
+	/*public Queen(String player, String piece ) {
+		super(player, piece);
+	}*/
+	public Queen(String player, String pieceName, int xCoordinate, int yCoordinate, BoardCell[][] chessBoard) {
+		super(player, pieceName);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+		
+		incrementAttackPath(chessBoard);
+		chessBoard[xCoordinate][yCoordinate].empty = false;
+	}
+
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int new_x, int new_y) {
+		int change_in_x = Math.abs(this.piece_xCoordinate - new_x);
+		int change_in_y = Math.abs(this.piece_yCoordinate - new_y);
+		int change_in_xy = change_in_x/change_in_y;
+		int x = this.piece_xCoordinate;
+		int y = this.piece_yCoordinate;
+		
+		//queen can move left, right, up, down, or diagonally
+		if(change_in_xy == 1 ){
+			
+			while(y != new_y-1) {
+				if(x > new_x && y > new_x) {
+					x--;
+					y--;
+				}
+				if(x < new_x && y < new_y) {
+					x++;
+					y++;
+				}
+				if(x > new_x && y < new_x) {
+					x--;
+					y++;
+				}
+				if(x < new_x && y > new_x) {
+					x++;
+					y--;
+				}
+				
+				if(chessBoard[x][y].empty == false && chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())) {
+					return false;
+				}
+				else if(chessBoard[x][y].empty == false && !chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())){
+					return true;
+				}
+			}
+		}
+		else if((change_in_x > 0 && change_in_y == 0)) {
+			while ( x != new_x-1) {
+				if(x > new_x) {
+					x --;
+				}
+				if(x < new_x) {
+					x++;
+				}
+				if(chessBoard[x][y].empty == false && chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())) {
+					return false;
+				}
+				else if(chessBoard[x][y].empty == false && !chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())){
+					return true;
+				}
+			}
+		}
+			
+		else if (change_in_x == 0 &&  change_in_y > 0){
+			while( y != new_y-1) {
+				if(y > new_y) {
+					y --;
+				}
+				if(y < new_y) {
+					y++;
+				}
+				if(chessBoard[x][y].empty == false && chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())) {
+					return false;
+				}
+				else if(chessBoard[x][y].empty == false && !chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())){
+					return true;
+				}
+			}
+		}
+		
+		
+		if(chessBoard[new_x][new_y].empty == false) {
+			//chessBoard[new_x][new_y].piece = null;
+			//chessBoard[new_x][new_y].empty = true;
+			return true;
+		}
+		
+		return true;
+	}
+
+	@Override
+	public boolean moving(Board board, int new_xCoordinate, int new_yCoordinate) {
+		Queen queen = this;
+		int startX = queen.piece_xCoordinate;
+		int startY = queen.piece_yCoordinate;
+		int change_in_x = Math.abs(this.piece_xCoordinate - new_xCoordinate);
+		int change_in_y = Math.abs(this.piece_yCoordinate - new_yCoordinate);
+		int change_in_xy = change_in_x/change_in_y;
+		int x = this.piece_xCoordinate;
+		int y = this.piece_yCoordinate;
+		int new_x = new_xCoordinate;
+		int new_y = new_yCoordinate;
+		
+		if(checkValidMove(board.board, new_xCoordinate, new_yCoordinate)) {
+			if(eating(board.board, new_xCoordinate, new_yCoordinate)) {
+				
+				if(change_in_xy == 1 ){
+					while(y != new_y) {
+						if(x > new_x && y > new_x) {
+							x--;
+							y--;
+						}
+						if(x < new_x && y < new_y) {
+							x++;
+							y++;
+						}
+						if(x > new_x && y < new_x) {
+							x--;
+							y++;
+						}
+						if(x < new_x && y > new_x) {
+							x++;
+							y--;
+						}
+						else if(board.board[x][y].empty == false && !board.board[x][y].piece.getPlayer().equals(this.getPlayer())){
+							board.prepareUpdatingBoard(startX, startY, x, y);
+							queen.decrementAttackPath(board.board);
+							board.board[startX][startY].piece = null;
+							board.board[startX][startY].empty = true;
+							board.board[x][y].piece = queen; 
+							board.board[x][y].empty = false;
+							queen.setMoved(true);
+							decrementAttackPath(board.board);
+							queen.piece_xCoordinate = x;
+							queen.piece_yCoordinate = y;
+							queen.incrementAttackPath(board.board);
+							board.updateBoardAttackPaths(startX, startY, x, y);
+							return true;
+						}
+					}
+				}
+				else if((change_in_x > 0 && change_in_y == 0)) {
+					while ( x != new_x) {
+						if(x > new_x) {
+							x --;
+						}
+						if(x < new_x) {
+							x++;
+						}
+						if(board.board[x][y].empty == false && !board.board[x][y].piece.getPlayer().equals(this.getPlayer())){
+							board.prepareUpdatingBoard(startX, startY, x, y);
+							queen.decrementAttackPath(board.board);
+							board.board[startX][startY].piece = null;
+							board.board[startX][startY].empty = true;
+							board.board[x][y].piece = queen; 
+							board.board[x][y].empty = false;
+							queen.setMoved(true);
+							decrementAttackPath(board.board);
+							queen.piece_xCoordinate = x;
+							queen.piece_yCoordinate = y;
+							queen.incrementAttackPath(board.board);
+							board.updateBoardAttackPaths(startX, startY, x, y);
+							return true;
+						}
+					}
+				}
+					
+				else if (change_in_x == 0 &&  change_in_y > 0){
+					while( y != new_y) {
+						if(y > new_y) {
+							y --;
+						}
+						if(y < new_y) {
+							y++;
+						}
+						if(board.board[x][y].empty == false && !board.board[x][y].piece.getPlayer().equals(this.getPlayer())){
+							board.prepareUpdatingBoard(startX, startY, x, y);
+							queen.decrementAttackPath(board.board);
+							board.board[startX][startY].piece = null;
+							board.board[startX][startY].empty = true;
+							board.board[x][y].piece = queen; 
+							board.board[x][y].empty = false;
+							queen.setMoved(true);
+							decrementAttackPath(board.board);
+							queen.piece_xCoordinate = x;
+							queen.piece_yCoordinate = y;
+							queen.incrementAttackPath(board.board);
+							board.updateBoardAttackPaths(startX, startY, x, y);
+							return true;
+						}
+					}
+				}
+			}
+			else{
+				board.prepareUpdatingBoard(startX, startY, new_xCoordinate, new_yCoordinate);
+				queen.decrementAttackPath(board.board);
+				board.board[startX][startY].piece = null;
+				board.board[startX][startY].empty = true;
+				board.board[new_xCoordinate][new_yCoordinate].piece = queen; 
+				board.board[new_xCoordinate][new_yCoordinate].empty = false;
+				queen.setMoved(true);
+				decrementAttackPath(board.board);
+				queen.piece_xCoordinate = new_xCoordinate;
+				queen.piece_yCoordinate = new_yCoordinate;
+				queen.incrementAttackPath(board.board);
+				board.updateBoardAttackPaths(startX, startY, new_xCoordinate, new_yCoordinate);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean checkValidMove(BoardCell[][] chessBoard, int new_x, int new_y) {
+		
+		Queen queen = this;
+		int queenX = queen.piece_xCoordinate;
+		int queenY = queen.piece_yCoordinate;
+		
+		boolean 
+		decreasedX = false,
+		increasedX = false,
+		decreasedY = false,
+		increasedY = false;
+		
+		boolean bottomLeft = false;
+		boolean topLeft = false;
+		boolean topRight = false;
+		boolean bottomRight = false;
+		
+		if(rookX - new_xCoordinate > 0 && queenY == new_y) {
+			decreasedX = true;
+		}
+		else {
+			increasedX = true;
+		}
+		
+		if(rookY - new_yCoordinate > 0 && queenX == new_x) {
+			decreasedY = true;
+		}
+		else {
+			increasedY = true;
+		}
+		
+		if(new_xCoordinate + new_yCoordinate > 16) {
+			//System.out.println("Invalid move");
+			return false;
+		}
+		if(rook.piece_xCoordinate != new_xCoordinate && rook.piece_yCoordinate == new_yCoordinate) {	// Move horizontally
+			
+			if(decreasedX) {		// Going left of board
+				for(int xCell = rookX - 1, yCell = rookY ; xCell > new_xCoordinate ; xCell--) {	// check no piece is in the way
+					if(!chessBoard[xCell][yCell].empty) {
+						return false;
+					}
+				}
+				return true;
+			}
+			else if(increasedX) {	// Going right of board
+				for(int xCell = rookX + 1, yCell = rookY ; rookX < new_xCoordinate ; xCell++) {		// Check no piece is in the way
+					if(!chessBoard[xCell][yCell].empty) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		
+		if(rook.piece_xCoordinate == new_xCoordinate && rook.piece_yCoordinate != new_yCoordinate) {
+			
+			if(decreasedY) {		// Going down the Board
+				for(int xCell = rookX, yCell = rookY - 1; yCell > new_yCoordinate ; yCell--) {
+					if(!chessBoard[xCell][yCell].empty) {
+						return false;
+					}
+				}
+				return true;
+			}
+			else if(increasedY) {	// Going up the board
+				for(int xCell = rookX, yCell = rookY + 1; yCell > new_yCoordinate ; yCell++) {
+					if(!chessBoard[xCell][yCell].empty) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		
+		Queen queen = this;
+		
+		if(queen.getAttackPathVisible()) {
+			return;
+		}
+		
+		String currentPlayer = queen.getPlayer();
+		
+		if(currentPlayer.equals("white")) {									// Rook is a White Piece
+			
+			for(int xCell = queen.piece_xCoordinate - 1,  yCell = queen.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell++) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell++, yCell++) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell++, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate - 1 , yCell = queen.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			
+			for(int queenX = queen.piece_xCoordinate - 1; queenX > -1 ; queenX--) {						// Check cells to left of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("black")) {
+							chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int queenX = queen.piece_xCoordinate + 1 ; queenX < 8 ; queenX++) {						// Check cells to right of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("black")) {
+							chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate + 1 ; queenY < 8 ; queenY++) {						// Check all cells above Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("black")) {
+							chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate - 1 ; queenY > -1 ; queenY--) {						// Check all cells below Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("black")) {
+							chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			queen.setAttackPathVisible(true);
+			return;
+		}
+		
+		if(currentPlayer.equals("black")) {										// Rook is a Black piece
+			
+			for(int xCell = queen.piece_xCoordinate - 1,  yCell = queen.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell++) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell++, yCell++) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell++, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate - 1 , yCell = queen.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int queenX = queen.piece_xCoordinate - 1; queenX > -1 ; queenX--) {						// Check cells to left of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("white")) {
+							chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int queenX = queen.piece_xCoordinate + 1 ; queenX < 8 ; queenX++) {						// Check cells to right of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("white")) {
+							chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate + 1 ; queenY < 8 ; queenY++) {						// Check all cells above Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("white")) {
+							chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate - 1 ; queenY > -1 ; queenY--) {						// Check all cells below Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("white")) {
+							chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell++;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell++;
+					break;
+				}
+			}
+			
+			queen.setAttackPathVisible(true);
+			return;
+		}
+	}
+
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		Queen queen = this;
+		
+		if(!queen.getAttackPathVisible()) {
+			return;
+		}
+		
+		String currentPlayer = queen.getPlayer();
+		
+		if(currentPlayer.equals("white")) {									// Rook is a White Piece
+			
+			for(int xCell = queen.piece_xCoordinate - 1,  yCell = queen.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell--) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell--, yCell--) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell--, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate - 1 , yCell = queen.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			
+			for(int queenX = queen.piece_xCoordinate - 1; queenX > -1 ; queenX--) {						// Check cells to left of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("black")) {
+							chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int queenX = queen.piece_xCoordinate + 1 ; queenX < 8 ; queenX--) {						// Check cells to right of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("black")) {
+							chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate + 1 ; queenY < 8 ; queenY--) {						// Check all cells above Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("black")) {
+							chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate - 1 ; queenY > -1 ; queenY--) {						// Check all cells below Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("black")) {
+							chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			queen.setAttackPathVisible(false);
+			return;
+		}
+		
+		if(currentPlayer.equals("black")) {										// Rook is a Black piece
+			
+			for(int xCell = queen.piece_xCoordinate - 1,  yCell = queen.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell--) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell--, yCell--) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate + 1, yCell = queen.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell--, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = queen.piece_xCoordinate - 1 , yCell = queen.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int queenX = queen.piece_xCoordinate - 1; queenX > -1 ; queenX--) {						// Check cells to left of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("white")) {
+							chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int queenX = queen.piece_xCoordinate + 1 ; queenX < 8 ; queenX--) {						// Check cells to right of Rook
+				if(chessBoard[queenX][queen.piece_yCoordinate].empty == true) {
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[queenX][queen.piece_yCoordinate].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queenX][queen.piece_yCoordinate].piece.getPlayer().equals("white")) {
+							chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queenX][queen.piece_yCoordinate].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate + 1 ; queenY < 8 ; queenY--) {						// Check all cells above Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("white")) {
+							chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int queenY = queen.piece_yCoordinate - 1 ; queenY > -1 ; queenY--) {						// Check all cells below Rook
+				if(chessBoard[queen.piece_xCoordinate][queenY].empty == true) {
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[queen.piece_xCoordinate][queenY].piece instanceof King) {				// Continue attack if enemy King
+						if(chessBoard[queen.piece_xCoordinate][queenY].piece.getPlayer().equals("white")) {
+							chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell--;
+							continue;
+						}
+					}
+					chessBoard[queen.piece_xCoordinate][queenY].blackAttackCell--;
+					break;
+				}
+			}
+			
+			queen.setAttackPathVisible(false);
+			return;
+		}
+	}
+}

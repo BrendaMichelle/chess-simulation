@@ -1,0 +1,438 @@
+/**
+ * 
+ */
+package chess;
+
+/**
+ * @author royjacome
+ *
+ */
+public class King extends Piece implements PieceAttribute{
+	
+	public King(int player, boolean moved, int x, int y) {
+		super(player, moved);
+		this.x = x;
+		this.y = y;
+	}
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#eating(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int x, int y) {
+		
+		Piece piece = chessBoard[x][y].piece;
+		int pieceOwner = chessBoard[x][y].piece.getPlayer();
+		int currentPlayer = getPlayer();
+		
+		if(pieceOwner != currentPlayer) {
+			if(piece instanceof Rook) {
+				((Rook) piece).decrementAttackPath(chessBoard);
+				chessBoard[x][y].piece = null;
+				return true;
+			}
+			else if(piece instanceof King) {
+				System.out.println("A win in this case?");
+				((King) piece).decrementAttackPath(chessBoard);
+				chessBoard[x][y].piece = null;
+				return true;
+			}
+			/*else if(piece instanceof Queen) {
+				((Queen) piece).decrementAttackPath(chessBoard);
+				chessBoard[x][y].currentPiece = null;
+				return true;
+			}
+			else if(piece instanceof Knight) {
+				((Knight) piece).decrementAttackPath(chessBoard);
+				chessBoard[x][y].currentPiece = null;
+				return true;
+			}
+			else if(piece instanceof Bishop) {
+				((Bishop) piece).decrementAttackPath(chessBaord);
+				chessBoard[x][y].currentPiece = null;
+				return true;
+			}
+			else if(piece instanceof Pawn) {
+				((Pawn) piece).decrementAttackPath(ChessBoard);
+				chessBoard[x][y].currentPiece = null;
+				return true;
+			}*/
+		}
+		
+		//System.out.println("Can't eat your own chess piece");
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#moving(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean moving(BoardCell[][] chessBoard, int x, int y) {
+		
+		// Check if castling
+		if(chessBoard[x][y].piece instanceof Rook) {				// Coordinate given gives a rook
+			
+			boolean kingMoved = getMoved();
+			boolean rookMoved = chessBoard[x][y].piece.getMoved();
+			
+			King king = this;
+			
+			// check if either King or specified Rook moved
+			if(kingMoved || rookMoved) {									// Both pieces should not have moved
+				System.out.println("Castling not valid");
+				return false;
+			}
+			
+			// check which team the king is on; White or Black
+			if(king.getPlayer() == 1) {									// King is on White team
+				
+				// check if king is in check
+				if(chessBoard[king.x][king.y].blackAttackCell > 0) {		// King is not in check
+					System.out.println("Cannot Castle, King is in check!");
+					return false;
+				}
+				
+				// check if spaces between king and rook are empty
+				// at same time, check if king will be in check
+				int index = king.x;
+				int counter = 2;
+				if(x + 1 == chessBoard.length) {							// Check spaces are open and not under attack on King's side
+					while(counter > 0) {
+						if(!chessBoard[index+1][y].empty || chessBoard[index+1][y].blackAttackCell > 0) {
+							System.out.println("Cannot Castle, pieces between King and Rook or king will be in check");
+							return false;
+						}
+						index++;
+						counter--;
+					}
+					// White King Castles King Side
+					Rook rook = (Rook)chessBoard[x][y].piece;
+					
+					castleKingSide(chessBoard, rook, 1);
+				}
+				else {													// Check spaces are open and not under attack on Queen's side
+					while(counter > 0) {
+						if(!chessBoard[index-1][y].empty || chessBoard[index-1][y].blackAttackCell > 0) {
+							System.out.println("Cannot Castle, pieces between King and Rook or king will be in check");
+							return false;
+						}
+						index--;
+						counter--;
+					}
+				}
+				
+				Rook rook = (Rook)chessBoard[x][y].piece;
+				
+				castleQueenSide(chessBoard, rook, 1);
+			}
+			
+			if(king.getPlayer() == 2) {									// King is on Black team
+				
+				// check if king is in check
+				if(chessBoard[king.x][king.y].whiteAttackCell > 0) {		// King is not in check
+					System.out.println("Cannot Castle, King is in check!");
+					return false;
+				}
+				
+				// check if spaces between king and rook are empty
+				// at same time, check if king will be in check
+				int index = king.x;
+				int counter = 2;
+				if(x + 1 == chessBoard.length) {							// Check spaces are open and not under attack on King's side
+					while(counter > 0) {
+						if(!chessBoard[index+1][y].empty || chessBoard[index+1][y].whiteAttackCell > 0) {
+							System.out.println("Cannot Castle, pieces between King and Rook or king will be in check");
+							return false;
+						}
+						index++;
+						counter--;
+					}
+					
+					Rook rook = (Rook)chessBoard[x][y].piece;
+					
+					castleKingSide(chessBoard, rook, 2);
+				}
+				else {												// Check spaces are open and not under attack on Queem's side
+					while(counter > 0) {
+						if(!chessBoard[index-1][y].empty || chessBoard[index-1][y].whiteAttackCell > 0) {
+							System.out.println("Cannot Castle, pieces between King and Rook or king will be in check");
+							return false;
+						}
+						index--;
+						counter--;
+					}
+				}
+				
+				Rook rook = (Rook)chessBoard[x][y].piece;
+				
+				castleQueenSide(chessBoard, rook, 2);
+			}
+		}
+		
+		// else check if new position is valid for King
+		if(!checkValidMove(x, y)) {									// Not castling, King has valid move
+			return false;
+		}
+		
+		// Check if King will be eating
+		if(!chessBoard[x][y].empty) {
+			if(eating(chessBoard, x, y)){							// King will eat opposing team
+				chessBoard[this.x][this.y].empty = true;
+				chessBoard[this.x][this.y].piece = null;
+				this.setMoved(true);
+				chessBoard[x][y].piece = this;
+				// decrement attack path
+				decrementAttackPath(chessBoard);
+				this.x = x;
+				this.y = y;
+				// increment after movement the attack path
+				incrementAttackPath(chessBoard);
+				return true;
+			}
+		}
+		// if not then just move king
+		else {
+			chessBoard[x][y].empty = false;
+			chessBoard[this.x][this.y].empty = true;
+			chessBoard[this.x][this.y].piece = null;
+			this.setMoved(true);
+			chessBoard[x][y].piece = this;
+			// decrement attack path
+			decrementAttackPath(chessBoard);
+			this.x = x;
+			this.y = y;
+			// increment after movement the attack path
+			incrementAttackPath(chessBoard);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#checkValidMove(int, int)
+	 */
+	@Override
+	public boolean checkValidMove(int x, int y) {
+		/*Must check if it also an out of bounds move*/
+		if(x + y > 16) {
+			//System.out.println("Invalid move");
+			return false;
+		}
+		
+		if(this.x == x && this.y == y) {			// no movement at all, invalid
+			//System.out.println("Select a different cell to move King other than current cell");
+			return false;
+		}
+		if(this.x == x) {						// no horizontal movement
+			if(Math.abs(this.y - y) == 1) {
+				return true;
+			}
+		}
+		if(this.y == y) {						// no vertical movement
+			if(Math.abs(this.x - x) == 1) {
+				return true;
+			}
+		}
+		if(Math.abs((this.x - x ) + (this.y - y)) == 1){		// check diagonal movement
+			return true;
+		}
+		//System.out.println("No condition has been met for the King");
+		return false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#incrementAttackPath(BoardCell[][] chessBoard)
+	 */
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		int currentPlayer = this.getPlayer();
+		chessBoard[x][y].empty = false;
+		
+		// King belongs to player White
+		if(currentPlayer == 1) {
+			chessBoard[x][y].whiteAttackCell++;
+			if(x-1 != -1 && y-1 != -1)
+				chessBoard[x-1][y-1].whiteAttackCell++;
+			if(x-1 != 0)
+				chessBoard[x-1][y].whiteAttackCell++;
+			if(x-1 != 0 && y+1 != chessBoard.length)
+				chessBoard[x-1][y+1].whiteAttackCell++;
+			if(y+1 != chessBoard.length)
+				chessBoard[x][y+1].whiteAttackCell++;
+			if(x+1 != chessBoard.length && y+1 != chessBoard.length)
+				chessBoard[x+1][y+1].whiteAttackCell++;
+			if(x+1 != chessBoard.length)
+				chessBoard[x+1][y].whiteAttackCell++;
+			if(x+1 != chessBoard.length && y-1 != 0)
+				chessBoard[x+1][y-1].whiteAttackCell++;
+			if(y-1 != 0)
+				chessBoard[x][y-1].whiteAttackCell++;
+			return;
+		}
+		
+		if(currentPlayer == 2) {
+			chessBoard[x][y].blackAttackCell++;
+			if(x-1 != -1 && y-1 != -1)
+				chessBoard[x-1][y-1].blackAttackCell++;
+			if(x-1 != 0)
+				chessBoard[x-1][y].blackAttackCell++;
+			if(x-1 != 0 && y+1 != chessBoard.length)
+				chessBoard[x-1][y+1].blackAttackCell++;
+			if(y+1 != chessBoard.length)
+				chessBoard[x][y+1].blackAttackCell++;
+			if(x+1 != chessBoard.length && y+1 != chessBoard.length)
+				chessBoard[x+1][y+1].blackAttackCell++;
+			if(x+1 != chessBoard.length)
+				chessBoard[x+1][y].blackAttackCell++;
+			if(x+1 != chessBoard.length && y-1 != 0)
+				chessBoard[x+1][y-1].blackAttackCell++;
+			if(y-1 != 0)
+				chessBoard[x][y-1].blackAttackCell--;
+			return;
+		}
+		
+		System.out.println("Chess Piece was not assigned a player code (1 for white and 2 for black.");
+		System.out.println("Or soomething else has ocurred than shouldnt have within incrementAttackPath method");
+		return;
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#decrementAttackPath(BoardCell[][] chessBoard)
+	 */
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		
+		int currentPlayer = this.getPlayer();
+		chessBoard[x][y].empty = true;
+		
+		// King belongs to player White
+		if(currentPlayer == 1) {
+			chessBoard[x][y].whiteAttackCell--;
+			if(x-1 != -1 && y-1 != -1)
+				chessBoard[x-1][y-1].whiteAttackCell--;
+			if(x-1 != 0)
+				chessBoard[x-1][y].whiteAttackCell--;
+			if(x-1 != 0 && y+1 != chessBoard.length)
+				chessBoard[x-1][y+1].whiteAttackCell--;
+			if(y+1 != chessBoard.length)
+				chessBoard[x][y+1].whiteAttackCell--;
+			if(x+1 != chessBoard.length && y+1 != chessBoard.length)
+				chessBoard[x+1][y+1].whiteAttackCell--;
+			if(x+1 != chessBoard.length)
+				chessBoard[x+1][y].whiteAttackCell--;
+			if(x+1 != chessBoard.length && y-1 != 0)
+				chessBoard[x+1][y-1].whiteAttackCell--;
+			if(y-1 != 0)
+				chessBoard[x][y-1].whiteAttackCell--;
+			return;
+		}
+		
+		if(currentPlayer == 2) {
+			chessBoard[x][y].blackAttackCell--;
+			if(x-1 != -1 && y-1 != -1)
+				chessBoard[x-1][y-1].blackAttackCell--;
+			if(x-1 != 0)
+				chessBoard[x-1][y].blackAttackCell--;
+			if(x-1 != 0 && y+1 != chessBoard.length)
+				chessBoard[x-1][y+1].blackAttackCell--;
+			if(y+1 != chessBoard.length)
+				chessBoard[x][y+1].blackAttackCell--;
+			if(x+1 != chessBoard.length && y+1 != chessBoard.length)
+				chessBoard[x+1][y+1].blackAttackCell--;
+			if(x+1 != chessBoard.length)
+				chessBoard[x+1][y].blackAttackCell--;
+			if(x+1 != chessBoard.length && y-1 != 0)
+				chessBoard[x+1][y-1].blackAttackCell--;
+			if(y-1 != 0)
+				chessBoard[x][y-1].blackAttackCell--;
+			return;
+		}
+		
+		System.out.println("Chess Piece was not assigned a player code (1 for white and 2 for black.");
+		System.out.println("Or soomething else has ocurred than shouldnt have within decrementAttackPath method");
+		return;
+		
+	}
+	
+	
+	public void castleKingSide(BoardCell[][] chessBoard, Rook rook, int player) {
+		
+		King king = this;
+		rook.decrementAttackPath(chessBoard);
+		king.decrementAttackPath(chessBoard);
+		
+		//if(player == 1) { // King is White
+			
+			chessBoard[chessBoard.length - 1][y] = null;	//Remove Rook
+			chessBoard[king.x][y] = null; 			//Remove King
+			chessBoard[chessBoard.length - 1][y].empty = true;	//Rook Cell is empty
+			chessBoard[king.x][y].empty = true; 			//King cell is empty
+			
+			rook.x = king.x + 1;
+			rook.setMoved(true);
+			chessBoard[rook.x][y].piece = rook;
+			chessBoard[rook.x][y].empty = false;
+			rook.incrementAttackPath(chessBoard);
+			
+			king.x = king.x + 2;
+			king.setMoved(true);
+			chessBoard[king.x][y].piece = this;
+			chessBoard[king.x][y].empty = false;
+			incrementAttackPath(chessBoard);
+		/*}
+		else if(player == 2) {	//King is Black
+			chessBoard[king.x - ]
+		}*/
+		
+		return;
+	}
+	
+	public void castleQueenSide(BoardCell[][] chessBoard, Rook rook, int player) {
+		
+		King king = this;
+		rook.decrementAttackPath(chessBoard);
+		king.decrementAttackPath(chessBoard);;
+		
+		//if(player == 1) { // King is White
+			
+			chessBoard[rook.x][y] = null;
+			chessBoard[king.x][y] = null;
+			chessBoard[rook.x][y].empty = true;
+			chessBoard[king.x][y].empty = true;
+			
+			rook.x = king.x - 1;
+			rook.setMoved(true);
+			chessBoard[rook.x][y].piece = rook;
+			chessBoard[rook.x][y].empty = false;
+			rook.incrementAttackPath(chessBoard);
+			
+			king.x = king.x - 2;
+			king.setMoved(true);
+			chessBoard[king.x][y].piece = king;
+			chessBoard[king.x][y].empty = false;
+			king.incrementAttackPath(chessBoard);
+		
+		
+		/*}
+		else if(player == 2) {	//King is Black
+			chessBoard[king.x - ]
+		}*/
+		return;
+	}
+	
+	public boolean equals(Object o) {
+		
+		if(o != null || !(o instanceof Piece)) {
+			return false;
+		}
+		
+		King other = (King)o;
+		
+		return true;
+	}
+}
+
+
+

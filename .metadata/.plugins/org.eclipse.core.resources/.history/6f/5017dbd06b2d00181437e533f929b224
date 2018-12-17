@@ -1,0 +1,444 @@
+package chess;
+
+/**
+ * @author royjacome
+ *
+ */
+public class Bishop extends Piece  {
+
+	/**
+	 * @param player
+	 * @param moved
+	 */
+	public Bishop(String player, String pieceName, int xCoordinate, int yCoordinate, BoardCell[][] chessBoard) {
+		super(player, pieceName);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+		
+		incrementAttackPath(chessBoard);
+		chessBoard[xCoordinate][yCoordinate].empty = false;
+	}
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#eating(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		Piece pieceToBeEaten = chessBoard[new_xCoordinate][new_yCoordinate].piece;
+		String pieceOwner = pieceToBeEaten.getPlayer();
+		String currentPlayer = getPlayer();
+		
+		if(!pieceOwner.equals(currentPlayer)) {
+			pieceToBeEaten.decrementAttackPath(chessBoard);
+			chessBoard[new_xCoordinate][new_yCoordinate].piece = null;
+			return true;
+		}
+		else {
+			// Can't eat your own piece
+			System.out.println("Illegal move, try again");
+		}
+		
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#moving(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean moving(Board board, int new_xCoordinate, int new_yCoordinate) {
+		
+		Bishop bishop = this;
+		
+		if(!checkValidMove(board.board, new_xCoordinate, new_yCoordinate)) {
+			return false;
+		}
+		
+		if(!board.board[new_xCoordinate][new_yCoordinate].empty) {
+			if(eating(board.board, new_xCoordinate, new_yCoordinate)) {
+				int originalX = bishop.piece_xCoordinate;
+				int originalY = bishop.piece_yCoordinate;
+				board.prepareUpdatingBoard(originalX, originalY, new_xCoordinate, new_yCoordinate);
+				bishop.decrementAttackPath(board.board);
+				board.board[originalX][originalY].empty = true;
+				board.board[originalX][originalY].piece = null;
+				bishop.setMoved(true);
+				board.board[new_xCoordinate][new_yCoordinate].empty = false;
+				board.board[new_xCoordinate][new_yCoordinate].piece = bishop;
+				bishop.piece_xCoordinate = new_xCoordinate;
+				bishop.piece_yCoordinate = new_yCoordinate;
+				bishop.incrementAttackPath(board.board);
+				board.updateBoardAttackPaths(originalX, originalY, new_xCoordinate, new_yCoordinate);
+
+				return true;
+			}
+		}
+		// Else just move Bishop
+		else {
+			int originalX = bishop.piece_xCoordinate;
+			int originalY = bishop.piece_yCoordinate;
+
+			board.prepareUpdatingBoard(originalX, originalY, new_xCoordinate, new_yCoordinate);
+			bishop.decrementAttackPath(board.board);
+			board.board[originalX][originalY].empty = true;
+			board.board[originalX][originalY].piece = null;
+			bishop.setMoved(true);
+			board.board[new_xCoordinate][new_yCoordinate].empty = false;
+			board.board[new_xCoordinate][new_yCoordinate].piece = bishop;
+			bishop.piece_xCoordinate = new_xCoordinate;
+			bishop.piece_yCoordinate = new_yCoordinate;
+			bishop.incrementAttackPath(board.board);
+			board.updateBoardAttackPaths(originalX, originalY, new_xCoordinate, new_yCoordinate);
+
+			return true;
+		}
+		
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#checkValidMove(int, int)
+	 */
+	@Override
+	public boolean checkValidMove(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		
+		Bishop bishop = this;
+		
+		int bishopX = bishop.piece_xCoordinate;
+		int bishopY = bishop.piece_yCoordinate;
+		
+		boolean bottomLeft = false;
+		boolean topLeft = false;
+		boolean topRight = false;
+		boolean bottomRight = false;
+		
+		if(bishopX - new_xCoordinate > 0 && bishopY - new_yCoordinate > 0) {
+			bottomLeft = true;
+		}
+		else if(bishopX - new_xCoordinate > 0 && bishopY - new_yCoordinate < 0) {
+			topLeft = true;
+		}
+		else if(bishopX - new_xCoordinate < 0 && bishopY - new_yCoordinate < 0) {
+			topRight = true;
+		}
+		else if(bishopX - new_xCoordinate < 0 && bishopY - new_yCoordinate > 0) {
+			bottomRight = true;
+		}
+		
+		if(new_xCoordinate + new_yCoordinate > 16) {
+			System.out.println("Illegal move, try again");
+			return false;
+		}
+		
+		if(Math.abs((new_yCoordinate - bishop.piece_yCoordinate) / (new_xCoordinate - bishop.piece_xCoordinate)) == 1) {		// Valid move
+			
+			if(bottomLeft) {
+				for(int xCell = bishopX - 1 , yCell = bishopY - 1 ; xCell > new_xCoordinate && yCell > new_yCoordinate ; xCell--, yCell--) {
+					if(!chessBoard[xCell][yCell].empty) {
+						return false;
+					}
+					return true;
+				}
+			}
+			if(topLeft) {
+				for(int xCell = bishopX - 1 , yCell = bishopY + 1 ; xCell > new_xCoordinate && yCell < new_yCoordinate ; xCell--, yCell++) {
+					if(!chessBoard[xCell][yCell].empty) {
+						return false;
+					}
+					return true;
+				}
+			}
+			if(topRight) {
+				
+			}
+			if(bottomRight) {
+				
+			}
+			
+			return false;
+		}
+
+		System.out.println("Illegal move, try again");
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#incrementAttackPath(chess.BoardCell[][])
+	 */
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		
+		Bishop bishop = this;
+		
+		if(bishop.getAttackPathVisible()) {
+			return;
+		}
+		
+		String currentPlayer = bishop.getPlayer();
+		
+		if(currentPlayer.equals("white")) {					// Bishop is a White Piece
+			
+			for(int xCell = bishop.piece_xCoordinate - 1,  yCell = bishop.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell++) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell++, yCell++) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell++, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate - 1 , yCell = bishop.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell++;
+					break;
+				}
+			}
+			
+			bishop.setAttackPathVisible(true);
+			return;
+		}
+		
+		if(currentPlayer.equals("black")) {					// Bishop is a Black Piece
+			
+			for(int xCell = bishop.piece_xCoordinate - 1,  yCell = bishop.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell++) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell++, yCell++) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell++, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate - 1 , yCell = bishop.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell++;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell++;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell++;
+					break;
+				}
+			}
+			
+			bishop.setAttackPathVisible(true);
+			return;
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#decrementAttackPath(chess.BoardCell[][])
+	 */
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		
+		Bishop bishop = this;
+		
+		if(!bishop.getAttackPathVisible()) {
+			return;
+		}
+		
+		String currentPlayer = bishop.getPlayer();
+		
+		if(currentPlayer.equals("white")) {					// Bishop is a White Piece
+			
+			for(int xCell = bishop.piece_xCoordinate - 1,  yCell = bishop.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell++) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell++, yCell++) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell++, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate - 1 , yCell = bishop.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].whiteAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("black")) {
+						chessBoard[xCell][yCell].whiteAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].whiteAttackCell--;
+					break;
+				}
+			}
+			
+			bishop.setAttackPathVisible(false);
+			return;
+		}
+		
+		if(currentPlayer.equals("black")) {					// Bishop is a Black Piece
+			
+			for(int xCell = bishop.piece_xCoordinate - 1,  yCell = bishop.piece_yCoordinate + 1 ; xCell > -1 && yCell < 8 ; xCell--, yCell++) {	// Check cells top left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate + 1 ; xCell < 8 && yCell < 8 ; xCell++, yCell++) {		// Check cells top right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate + 1, yCell = bishop.piece_yCoordinate - 1 ; xCell < 8 && yCell > -1 ; xCell++, yCell--) {		// Check cells bottom right of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			for(int xCell = bishop.piece_xCoordinate - 1 , yCell = bishop.piece_yCoordinate - 1 ; xCell > -1 && yCell > -1 ; xCell--, yCell--) {	// Check cells bottom left of Bishop
+				if(chessBoard[xCell][yCell].empty) {
+					chessBoard[xCell][yCell].blackAttackCell--;
+				}
+				else {
+					if(chessBoard[xCell][yCell].piece instanceof King && chessBoard[xCell][yCell].piece.getPlayer().equals("white")) {
+						chessBoard[xCell][yCell].blackAttackCell--;
+						continue;
+					}
+					chessBoard[xCell][yCell].blackAttackCell--;
+					break;
+				}
+			}
+			
+			bishop.setAttackPathVisible(false);
+			return;
+		}
+
+	}
+}

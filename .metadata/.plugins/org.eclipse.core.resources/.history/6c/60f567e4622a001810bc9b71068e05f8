@@ -1,0 +1,32 @@
+package chess;
+
+public class ChessPiece {
+
+	private int player; // "1" for white and "2" for black
+	private boolean moved; // For Castling or En Passant
+	int piece_xCoordinate, piece_yCoordinate;
+	public ChessPiece(int player, boolean moved) {
+		this.player = player;
+		this.moved = moved;
+	}
+	
+	public boolean equals(Object o) {
+		if(o != null || !(o instanceof ChessPiece)) {
+			return false;
+		}
+		return true;
+	}
+	
+	public int getPlayer() {
+		return player;
+	}
+	
+	public boolean getMoved() {
+		return moved;
+	}
+	
+	public void setMoved(boolean cond) {
+		moved = cond;
+	}
+	
+}

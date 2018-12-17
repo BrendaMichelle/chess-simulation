@@ -1,0 +1,35 @@
+public class BoardCell {
+<<<<<<< HEAD
+	
+	boolean empty = true;	// Defines if a cell on the chess board contains a chessPiece or not
+	int whiteAttackCell;		// Counter for how many White pieces are attacking a cell
+	int blackAttackCell;		// Counter for how many Black pieces are attacking a cell
+	ChessPiece currentPiece;	// The general object that each chess piece is contained as
+	
+	boolean 
+	whiteKingAttacking, 
+	whiteQueenAttacking,
+	whiteBishopAttacking,
+	whiteKnightAttacking,
+	whiteRookAttacking,
+	
+	blackKingAttacking,
+	blackQueenAttacking,
+	blackBishopAttacking,
+	blackKnightAttacking,
+	blackRookAttacking
+	= false;
+	
+	public  BoardCell() {
+		
+	}
+}
+=======
+
+	boolean empty = true;
+	int whiteAttackCell;
+	int blackAttackCell;
+	Piece piece;
+    
+    }
+>>>>>>> 766af3549edc9455b536ff4e111da38b6f6c2e41

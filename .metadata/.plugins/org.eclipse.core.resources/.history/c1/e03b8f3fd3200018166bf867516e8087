@@ -1,0 +1,23 @@
+package chess;
+
+
+//this class is not used yet and can be ignored for now
+public class chess {
+
+	public static class ignore {
+		public String [][] board = new String [8][8];
+		
+		public void movepiece (String start, String destination) {
+			int start_column = start.charAt(0) - '0' - 49;
+			int dest_column = destination.charAt(0) - '0' - 49;
+			
+			int start_row = start.charAt(1) - '0';
+			int dest_row = destination.charAt(1) - '0';
+			
+			System.out.println("You want to move the piece at " +start_column + start_row +"to " + dest_column + dest_row);
+	
+			
+		}
+	}
+
+}

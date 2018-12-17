@@ -1,0 +1,420 @@
+package chess;
+/**
+ * <h1>Pawn class: represents a pawn piece </h1>
+ * <b>Details:</b> This class extends the class Piece.
+ * 
+*@author Brenda Rios
+*@since   2018-02-23
+*/
+public class Pawn extends Piece {
+	
+	boolean used_double_advance = false; //for en passant
+	
+	public Pawn(String player, String pieceName, int xCoordinate, int yCoordinate, BoardCell[][] chessBoard) {
+		super(player, pieceName);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+		
+		incrementAttackPath(chessBoard);
+		chessBoard[xCoordinate][yCoordinate].empty = false;
+	}
+	
+	/*
+	 * @see chess.PieceAttribute#eating(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		
+		if(chessBoard[new_xCoordinate][new_yCoordinate].empty) {
+			return false;
+		}
+		Piece pieceToBeEaten = chessBoard[new_xCoordinate][new_yCoordinate].piece;
+		String pieceOwner = pieceToBeEaten.getPlayer();
+		String currentPlayer = getPlayer();
+		
+		if(!pieceOwner.equals(currentPlayer)) {
+			pieceToBeEaten.decrementAttackPath(chessBoard);
+			chessBoard[new_xCoordinate][new_yCoordinate].piece = null;
+			return true;
+		}
+		else {
+			// Can't eat your own piece
+		}
+		
+		return false;
+	}
+	/*
+	 * @see chess.PieceAttribute#moving(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean moving(Board board, int new_x, int new_y) {
+		Pawn pawn = this;
+		int startX = pawn.piece_xCoordinate;
+		int startY = pawn.piece_yCoordinate;
+		int change_in_y = Math.abs(this.piece_yCoordinate - new_y);
+		
+		if(!checkValidMove(board.board, new_x, new_y)) {
+			return false;
+		}
+		
+		if(this.eating(board.board, new_x, new_y)) {
+			board.prepareUpdatingBoard(startX, startY, new_x, new_y);
+			pawn.decrementAttackPath(board.board);
+			board.board[startX][startY].piece = null;
+			board.board[startX][startY].empty = true;
+			board.board[new_x][new_y].piece = pawn; 
+			board.board[new_x][new_y].empty = false;
+			board.board[new_x][new_y].piece.moves_made ++;
+			pawn.setMoved(true);
+			decrementAttackPath(board.board);
+			pawn.piece_xCoordinate = new_x;
+			pawn.piece_yCoordinate = new_y;
+			pawn.incrementAttackPath(board.board);
+			board.updateBoardAttackPaths(startX, startY, new_x, new_y);
+			if(change_in_y == 2) {
+				((Pawn)board.board[new_x][new_y].piece).used_double_advance = true;
+			}
+			return true;
+		}
+		else {
+			board.prepareUpdatingBoard(startX, startY, new_x, new_y);
+			pawn.decrementAttackPath(board.board);
+			board.board[startX][startY].piece = null;
+			board.board[startX][startY].empty = true;
+			board.board[new_x][new_y].piece = pawn; 
+			board.board[new_x][new_y].empty = false;
+			board.board[new_x][new_y].piece.moves_made ++;
+			pawn.setMoved(true);
+			pawn.piece_xCoordinate = new_x;
+			pawn.piece_yCoordinate = new_y;
+			pawn.incrementAttackPath(board.board);
+			board.updateBoardAttackPaths(startX, startY, new_x, new_y);
+			if(change_in_y == 2) {
+				((Pawn)board.board[new_x][new_y].piece).used_double_advance = true;
+			}
+			return true;
+		}
+	}
+	
+	/*
+	 * @see chess.PieceAttribute#checkValidMove(int, int)
+	 */
+	@Override
+	public boolean checkValidMove(BoardCell[][] chessBoard, int new_x, int new_y) {
+		
+		Pawn pawn = this;
+		String currentPlayer = pawn.getPlayer();
+		
+		int pawnX = pawn.piece_xCoordinate;
+		int pawnY = pawn.piece_yCoordinate;
+		
+		if(currentPlayer.equals("white")) {	// White pawn piece
+			if(pawn.used_double_advance) {	// Already double jumped
+				if(pawnX - 1 == new_x && pawnY == new_y) {	// Moving forward
+					return true;
+				}
+				if(pawnX - 1 == new_x && pawnY - 1 == new_y) {	// Attempting to eat bottom left
+					return true;
+				}
+				if(pawnX - 1 == new_x && pawnY + 1 == new_y) {	// Attempting to eat top right
+					return true;
+				}
+			}
+			else {
+				if(pawnX - 2 == new_x && pawnY == new_y) {	// Double jumping
+					pawn.used_double_advance = true;
+					return true;
+				}
+				if(pawnX - 1 == new_x && pawnY == new_y) {	// Moving forward
+					pawn.used_double_advance = true;
+					return true;
+				}
+				if(pawnX - 1 == new_x && pawnY - 1 == new_y) {	// Attempting to eat bottom left
+					pawn.used_double_advance = true;
+					return true;
+				}
+				if(pawnX - 1 == new_x && pawnY + 1 == new_y) {	// Attempting to eat top right
+					pawn.used_double_advance = true;
+					return true;
+				}
+			}
+		}
+		
+		if(currentPlayer.equals("black")) {	// Black pawn piece
+			if(pawn.used_double_advance) {	// Already double jumped
+				if(pawnX + 1 == new_x && pawnY == new_y) {	// Moving forward
+					return true;
+				}
+				if(pawnX + 1 == new_x && pawnY - 1 == new_y) {	// Attempting to eat bottom left
+					return true;
+				}
+				if(pawnX + 1 == new_x && pawnY + 1 == new_y) {	// Attempting to eat top right
+					return true;
+				}
+			}
+			else {
+				if(pawnX + 2 == new_x && pawnY == new_y) {	// Double jumping
+					pawn.used_double_advance = true;
+					return true;
+				}
+				if(pawnX + 1 == new_x && pawnY == new_y) {	// Moving forward
+					pawn.used_double_advance = true;
+					return true;
+				}
+				if(pawnX + 1 == new_x && pawnY - 1 == new_y) {	// Attempting to eat bottom left
+					pawn.used_double_advance = true;
+					return true;
+				}
+				if(pawnX + 1 == new_x && pawnY + 1 == new_y) {	// Attempting to eat top right
+					pawn.used_double_advance = true;
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	/*
+	 * This method handles the special en passant if it is
+	 * determined to exist. French for "in passing," this chess move
+	 * exclusive to pawns in the beginning of a game.
+	 * 
+	 * @param chessBoard The piece's board cell.
+	 * @param new_x The pawn's future x position.
+	 * @param new_y The pawn's future y position.
+	 * @return boolean This boolean is true if an en passant was successful, false otherwise.
+	 */
+	public boolean enpassant(BoardCell[][] chessBoard, int new_x, int new_y) {
+		int change_in_x = new_x - this.piece_xCoordinate;
+		int change_in_y = new_y - this.piece_yCoordinate;
+		int change_in_xy = 0;
+		if(change_in_x != 0) { change_in_xy = change_in_y/change_in_x; }
+		else if(change_in_y != 0) {change_in_xy = change_in_x/ change_in_y; }
+		int x = this.piece_xCoordinate;
+		int y = this.piece_yCoordinate;
+		
+	
+		String passing_player = this.piece_name;
+	
+		if(!(chessBoard[x-1][y].piece instanceof Pawn) || !(chessBoard[x+1][y].piece instanceof Pawn)) {
+			return false; //not pawn
+		}
+		
+		if(change_in_xy == 1 && change_in_y > 0) {
+			if(!chessBoard[x-1][y].piece.piece_name.equals(passing_player) && chessBoard[x-1][y].piece.moves_made == 1 && ((Pawn)chessBoard[x-1][y].piece).used_double_advance == true ) { //doomed player is to the left of this player
+				if(((y == 4 ) || (y == 5)) ) {
+					if(passing_player.equals("bp") && chessBoard[x-1][y].piece.piece_yCoordinate-1 == new_y && chessBoard[x-1][y].piece.piece_xCoordinate == new_x) {
+					chessBoard[x-1][y].piece = null;
+					chessBoard[x-1][y].empty = true;
+					return true;
+					}
+					if(passing_player.equals("wp") && chessBoard[x-1][y].piece.piece_yCoordinate+1 == new_y && chessBoard[x-1][y].piece.piece_xCoordinate == new_x) {
+						chessBoard[x-1][y].piece = null;
+						chessBoard[x-1][y].empty = true;
+						return true;
+						}
+				}
+			}
+				if(!chessBoard[x+1][y].piece.piece_name.equals(passing_player) && chessBoard[x+1][y].piece.moves_made == 1 && ((Pawn)chessBoard[x+1][y].piece).used_double_advance == true ) { //doomed player is to the right of this player
+					if((y == 4 ) || (y == 5)) {
+						if(passing_player.equals("bp") && chessBoard[x+1][y].piece.piece_yCoordinate-1 == new_y && chessBoard[x+1][y].piece.piece_xCoordinate == new_x) {
+							chessBoard[x-1][y].piece = null;
+							chessBoard[x-1][y].empty = true;
+							return true;
+							}
+						if(passing_player.equals("wp") && chessBoard[x+1][y].piece.piece_yCoordinate+1 == new_y && chessBoard[x+1][y].piece.piece_xCoordinate == new_x) {
+							chessBoard[x-1][y].piece = null;
+							chessBoard[x-1][y].empty = true;
+							return true;
+							}
+					}	
+				
+			}
+			}
+			
+			
+		return false;
+		}
+
+/*
+ * This method handles the promotion of a pawn when it is at the end of 
+ * the opposing player's side.  If no specific desired promotion
+ * piece is given, the pawn is automatically promoted to a queen.
+ * 
+ * @param chessBoard The piece's board cell.
+ * @param x This is the piece's current x position.
+ * @param y This is the piece's current y position.  It should either be 7 or 0.
+ * @param piecetype This indicated the promotion piece the player particularly desires if any.
+ * 	
+ */
+	public void promotion (BoardCell[][] chessBoard,  int x, int y, String piecetype) {
+		//piece should already be in correct cell for promotion
+		Pawn pawn = this;
+		
+		//String player, String pieceName, int xCoordinate, int yCoordinate, BoardCell[][] chessBoard
+		if(this.getPlayer().equals("black")) {
+			if(y == 0) {//eligible for a promotion
+				if(piecetype.equals("Q") || piecetype.isEmpty() || piecetype.equals(null) || piecetype.equals("p")) {
+					Queen queen = new Queen(pawn.getPlayer(), "bQ", x, y, chessBoard);
+					chessBoard[x][y].piece = queen; 
+					return;
+				}
+				if(piecetype.equals("N") ) {
+					Knight knight = new Knight(pawn.getPlayer(), "bN", x, y, chessBoard);
+					chessBoard[x][y].piece = knight; 
+					return;
+				}
+				/*
+				if(piecetype.equals("K")) {
+					King king = new King(pawn.getPlayer(), "bK", x, y, chessBoard);
+					chessBoard[x][y].piece = king; 
+					return;
+				}*/
+				if(piecetype.equals("R") ) {
+					Rook rook = new Rook(pawn.getPlayer(), "bR", x, y, chessBoard);
+					chessBoard[x][y].piece = rook; 
+					return;
+				}
+				if(piecetype.equals("B") ) {
+					Bishop b = new Bishop(pawn.getPlayer(), "bB", x, y, chessBoard);
+					chessBoard[x][y].piece = b; 
+					return;
+				}
+				
+				
+			}
+		}
+		
+		
+		if(this.getPlayer().equals("white")) {
+			if(y == 7) {//eligible for a promotion
+				if(piecetype.equals("Q") || piecetype.isEmpty() || piecetype.equals(null) || piecetype.equals("p")) {
+					Queen queen = new Queen(pawn.getPlayer(), "wQ", x, y, chessBoard);
+					chessBoard[x][y].piece = queen; 
+					return;
+				}
+				if(piecetype.equals("N") ) {
+					Knight knight = new Knight(pawn.getPlayer(), "wN", x, y, chessBoard);
+					chessBoard[x][y].piece = knight; 
+					return;
+				}
+				/*
+				if(piecetype.equals("K")) {
+					King king = new King(pawn.getPlayer(), "wK", x, y, chessBoard);
+					chessBoard[x][y].piece = king; 
+					return;
+				}
+				*/
+				if(piecetype.equals("R") ) {
+					Rook rook = new Rook(pawn.getPlayer(), "wR", x, y, chessBoard);
+					chessBoard[x][y].piece = rook; 
+					return;
+				}
+				if(piecetype.equals("B") ) {
+					Bishop b = new Bishop(pawn.getPlayer(), "wB", x, y, chessBoard);
+					chessBoard[x][y].piece = b; 
+					return;
+				}
+				
+				
+			}
+		}
+		
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#incrementAttackPath(BoardCell[][] chessBoard)
+	 */
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		Pawn pawn = this;
+		int pawnX = pawn.piece_xCoordinate;
+		int pawnY = pawn.piece_yCoordinate;
+		String currentPlayer = pawn.getPlayer();
+		
+		if(pawn.getAttackPathVisible()) {
+			return;
+		}
+		
+		/*
+		 * white attack path
+		 */
+		
+		if(currentPlayer.equals("white")) {
+			
+			if(pawnX - 1 > -1 && pawnY - 1 > -1) {
+				chessBoard[pawnX - 1][pawnY - 1].whiteAttackCell++;
+			}
+			if(pawnX - 1 > -1 && pawnY + 1 < 8) {
+				chessBoard[pawnX - 1][pawnY + 1].whiteAttackCell++;
+			}
+			
+			pawn.setAttackPathVisible(true);
+			return;
+		}
+		
+		/*
+		 * black attack path
+		 */
+		if(currentPlayer.equals("black")) {
+			
+			if(pawnX + 1 < 8 && pawnY - 1 > -1) {
+				chessBoard[pawnX + 1][pawnY - 1].blackAttackCell++;
+			}
+			if(pawnX + 1 < 8 && pawnY + 1 < 8) {
+				chessBoard[pawnX + 1][pawnY + 1].blackAttackCell++;
+			}
+			
+			pawn.setAttackPathVisible(true);
+			return;
+		}
+	}
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#decrementAttackPath(BoardCell[][] chessBoard)
+	 */
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		Pawn pawn = this;
+		int pawnX = pawn.piece_xCoordinate;
+		int pawnY = pawn.piece_yCoordinate;
+		String currentPlayer = this.getPlayer();
+		
+		if(!pawn.getAttackPathVisible()) {
+			return;
+		}
+				
+		/*
+		 * white attack path
+		 */
+		if(currentPlayer.equals("white")) {
+			
+			if(pawnX - 1 > -1 && pawnY - 1 > -1) {
+				chessBoard[pawnX - 1][pawnY - 1].whiteAttackCell--;
+			}
+			if(pawnX - 1 > -1 && pawnY + 1 < 8) {
+				chessBoard[pawnX - 1][pawnY + 1].whiteAttackCell--;
+			}
+			
+			pawn.setAttackPathVisible(false);
+			return;
+		}
+		/*
+		 * black attack path
+		 */
+		if(currentPlayer.equals("black")) {
+			
+			if(pawnX + 1 < 8 && pawnY - 1 > -1) {
+				chessBoard[pawnX + 1][pawnY - 1].blackAttackCell--;
+			}
+			if(pawnX + 1 < 8 && pawnY + 1 < 8) {
+				chessBoard[pawnX + 1][pawnY + 1].blackAttackCell--;
+			}
+			
+			pawn.setAttackPathVisible(false);
+			return;
+		}
+		return;	
+	}
+}

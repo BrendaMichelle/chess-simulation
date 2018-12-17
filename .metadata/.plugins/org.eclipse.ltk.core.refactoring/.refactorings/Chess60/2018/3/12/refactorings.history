@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
+<session version="1.0">
+<refactoring accessors="true" comment="Delete element from project &apos;Chess60&apos;&#x0A;- Original project: &apos;Chess60&apos;&#x0A;- Original element: &apos;Chess60/src/(default package)&apos;" description="Delete element" element1="/src&lt;" elements="1" flags="589830" id="org.eclipse.jdt.ui.delete" resources="0" stamp="1521668808574" subPackages="false" version="1.0"/>
+=======
+<session version="1.0">&#x0A;<refactoring accessors="true" comment="Delete element from project &apos;Chess60&apos;&#x0A;- Original project: &apos;Chess60&apos;&#x0A;- Original element: &apos;chess.ChessPiece.java&apos;" description="Delete element" element1="/src&lt;chess{ChessPiece.java" elements="1" flags="589830" id="org.eclipse.jdt.ui.delete" resources="0" stamp="1521346486228" subPackages="false" version="1.0"/>&#x0A;<refactoring accessors="true" comment="Delete element from project &apos;Chess60&apos;&#x0A;- Original project: &apos;Chess60&apos;&#x0A;- Original element: &apos;chess.PieceAttribute.java&apos;" description="Delete element" element1="/src&lt;chess{PieceAttribute.java" elements="1" flags="589830" id="org.eclipse.jdt.ui.delete" resources="0" stamp="1521649667831" subPackages="false" version="1.0"/>
+>>>>>>> cb012a287278fadf2427316223f2cf0b8dd6fdf1
+</session>

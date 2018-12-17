@@ -1,0 +1,252 @@
+package chess;
+/*
+ * <h1>Queen class: represents a queen piece </h1>
+ * <b>Details:</b> This class extends the class Piece.
+ * 
+ * @author BrendaRios
+ * @since   2018-02-23
+ */
+public class Queen extends Piece {
+	//String whiteRep = "wQ";
+	//String blackRep = "bQ";
+	
+	/*public Queen(String player, String piece ) {
+		super(player, piece);
+	}*/
+	public Queen(String player, String pieceName, int xCoordinate, int yCoordinate, BoardCell[][] chessBoard) {
+		super(player, pieceName);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+		
+		incrementAttackPath(chessBoard);
+		chessBoard[xCoordinate][yCoordinate].empty = false;
+	}
+
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int new_x, int new_y) {
+		int change_in_x = Math.abs(this.piece_xCoordinate - new_x);
+		int change_in_y = Math.abs(this.piece_yCoordinate - new_y);
+		int change_in_xy = change_in_x/change_in_y;
+		int x = this.piece_xCoordinate;
+		int y = this.piece_yCoordinate;
+		
+		//queen can move left, right, up, down, or diagonally
+		if(change_in_xy == 1 ){
+			
+			while(y != new_y-1) {
+				if(x > new_x && y > new_x) {
+					x--;
+					y--;
+				}
+				if(x < new_x && y < new_y) {
+					x++;
+					y++;
+				}
+				if(x > new_x && y < new_x) {
+					x--;
+					y++;
+				}
+				if(x < new_x && y > new_x) {
+					x++;
+					y--;
+				}
+				
+				if(chessBoard[x][y].empty == false && chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())) {
+					return false;
+				}
+				else if(chessBoard[x][y].empty == false && !chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())){
+					return true;
+				}
+			}
+		}
+		else if((change_in_x > 0 && change_in_y == 0)) {
+			while ( x != new_x-1) {
+				if(x > new_x) {
+					x --;
+				}
+				if(x < new_x) {
+					x++;
+				}
+				if(chessBoard[x][y].empty == false && chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())) {
+					return false;
+				}
+				else if(chessBoard[x][y].empty == false && !chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())){
+					return true;
+				}
+			}
+		}
+			
+		else if (change_in_x == 0 &&  change_in_y > 0){
+			while( y != new_y-1) {
+				if(y > new_y) {
+					y --;
+				}
+				if(y < new_y) {
+					y++;
+				}
+				if(chessBoard[x][y].empty == false && chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())) {
+					return false;
+				}
+				else if(chessBoard[x][y].empty == false && !chessBoard[x][y].piece.getPlayer().equals(this.getPlayer())){
+					return true;
+				}
+			}
+		}
+		
+		
+		if(chessBoard[new_x][new_y].empty == false) {
+			//chessBoard[new_x][new_y].piece = null;
+			//chessBoard[new_x][new_y].empty = true;
+			return true;
+		}
+		
+		return true;
+	}
+
+	@Override
+	public boolean moving(Board board, int new_xCoordinate, int new_yCoordinate) {
+		Queen queen = this;
+		int startX = queen.piece_xCoordinate;
+		int startY = queen.piece_yCoordinate;
+		int change_in_x = Math.abs(this.piece_xCoordinate - new_xCoordinate);
+		int change_in_y = Math.abs(this.piece_yCoordinate - new_yCoordinate);
+		int change_in_xy = change_in_x/change_in_y;
+		int x = this.piece_xCoordinate;
+		int y = this.piece_yCoordinate;
+		int new_x = new_xCoordinate;
+		int new_y = new_yCoordinate;
+		
+		if(checkValidMove(board.board, new_xCoordinate, new_yCoordinate)) {
+			if(eating(board.board, new_xCoordinate, new_yCoordinate)) {
+				
+				if(change_in_xy == 1 ){
+					while(y != new_y) {
+						if(x > new_x && y > new_x) {
+							x--;
+							y--;
+						}
+						if(x < new_x && y < new_y) {
+							x++;
+							y++;
+						}
+						if(x > new_x && y < new_x) {
+							x--;
+							y++;
+						}
+						if(x < new_x && y > new_x) {
+							x++;
+							y--;
+						}
+						else if(board.board[x][y].empty == false && !board.board[x][y].piece.getPlayer().equals(this.getPlayer())){
+							//Board.prepareUpdatingBoard(startX, startY, x, y); uncomment this
+							queen.decrementAttackPath(board.board);
+							board.board[startX][startY].piece = null;
+							board.board[startX][startY].empty = true;
+							board.board[x][y].piece = queen; 
+							board.board[x][y].empty = false;
+							queen.setMoved(true);
+							decrementAttackPath(board.board);
+							queen.piece_xCoordinate = x;
+							queen.piece_yCoordinate = y;
+							queen.incrementAttackPath(board.board);
+							//Board.updateBoardAttackPaths(startX, startY, x, y); uncomment this
+							return true;
+						}
+					}
+				}
+				else if((change_in_x > 0 && change_in_y == 0)) {
+					while ( x != new_x) {
+						if(x > new_x) {
+							x --;
+						}
+						if(x < new_x) {
+							x++;
+						}
+						if(board.board[x][y].empty == false && !board.board[x][y].piece.getPlayer().equals(this.getPlayer())){
+						//	Board.prepareUpdatingBoard(startX, startY, x, y); uncomment this
+							queen.decrementAttackPath(board.board);
+							board.board[startX][startY].piece = null;
+							board.board[startX][startY].empty = true;
+							board.board[x][y].piece = queen; 
+							board.board[x][y].empty = false;
+							queen.setMoved(true);
+							decrementAttackPath(board.board);
+							queen.piece_xCoordinate = x;
+							queen.piece_yCoordinate = y;
+							queen.incrementAttackPath(board.board);
+						//	Board.updateBoardAttackPaths(startX, startY, x, y); uncomment this
+							return true;
+						}
+					}
+				}
+					
+				else if (change_in_x == 0 &&  change_in_y > 0){
+					while( y != new_y) {
+						if(y > new_y) {
+							y --;
+						}
+						if(y < new_y) {
+							y++;
+						}
+						if(board.board[x][y].empty == false && !board.board[x][y].piece.getPlayer().equals(this.getPlayer())){
+							//Board.prepareUpdatingBoard(startX, startY, x, y); uncomment this
+							queen.decrementAttackPath(board.board);
+							board.board[startX][startY].piece = null;
+							board.board[startX][startY].empty = true;
+							board.board[x][y].piece = queen; 
+							board.board[x][y].empty = false;
+							queen.setMoved(true);
+							decrementAttackPath(board.board);
+							queen.piece_xCoordinate = x;
+							queen.piece_yCoordinate = y;
+							queen.incrementAttackPath(board.board);
+							//Board.updateBoardAttackPaths(startX, startY, x, y); uncomment this
+							return true;
+						}
+					}
+				}
+			}
+			else{
+				//Board.prepareUpdatingBoard(startX, startY, new_xCoordinate, new_yCoordinate); uncomment this
+				queen.decrementAttackPath(board.board);
+				board.board[startX][startY].piece = null;
+				board.board[startX][startY].empty = true;
+				board.board[new_xCoordinate][new_yCoordinate].piece = queen; 
+				board.board[new_xCoordinate][new_yCoordinate].empty = false;
+				queen.setMoved(true);
+				decrementAttackPath(board.board);
+				queen.piece_xCoordinate = new_xCoordinate;
+				queen.piece_yCoordinate = new_yCoordinate;
+				queen.incrementAttackPath(board.board);
+				//Board.updateBoardAttackPaths(startX, startY, new_xCoordinate, new_yCoordinate); uncomment this
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean checkValidMove(BoardCell[][] chessBoard, int new_x, int new_y) {
+		int change_in_x = Math.abs(this.piece_xCoordinate - new_x);
+		int change_in_y = Math.abs(this.piece_yCoordinate - new_y);
+		int change_in_xy = change_in_x/change_in_y;
+		//queen can move left, right, up, down, or diagonally
+		if((change_in_xy == 1 ) || (change_in_x > 0 && change_in_y == 0) ||(change_in_x == 0 &&  change_in_y > 0)) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

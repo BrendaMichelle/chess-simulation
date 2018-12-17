@@ -1,0 +1,289 @@
+package chess;
+/**
+ * <h1>Knight class: represents a knight piece </h1>
+ * <b>Details:</b> This class extends the class Piece.
+ * 
+ * @author BrendaRios
+ * @since   2018-02-23
+ */
+
+public class Knight extends Piece {
+	String bpiece = "bN";
+	String wpiece = "wN";
+	/*public Knight(String player, String piece ) {
+		super(player, piece);
+	}*/
+	
+	public Knight(String player, String pieceName, int xCoordinate, int yCoordinate, BoardCell[][] chessBoard) {
+		super(player, pieceName);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+		
+		incrementAttackPath(chessBoard);
+		chessBoard[xCoordinate][yCoordinate].empty = false;
+	}
+	
+	/*
+	 * @see chess.PieceAttribute#eating(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate)  {
+		if(chessBoard[new_xCoordinate][new_yCoordinate].empty == true ) {
+			return false; //nothing to eat ( :
+		}
+		//can only eat pieces on third cell move
+		Piece doomedPiece = chessBoard[new_xCoordinate][new_yCoordinate].piece;
+		String opposing_pieceOwner = doomedPiece.getPlayer();
+		String currentPlayer = getPlayer();
+		if(opposing_pieceOwner.equals(currentPlayer)) {
+			return false; //can't eat one's own piece
+		}
+		else {
+			doomedPiece.decrementAttackPath(chessBoard);
+			chessBoard[new_xCoordinate][new_yCoordinate].piece = null; //& now we can insert the new player
+			chessBoard[new_xCoordinate][new_yCoordinate].empty = true;
+			return true;
+		}
+	
+	}
+		
+	
+	/*
+	 * @see chess.PieceAttribute#moving(chess.BoardCell[][], int, int)
+	 */
+	@Override
+	public boolean moving(Board board, int new_xCoordinate, int new_yCoordinate) {
+		Knight knight = this;
+		int startX = knight.piece_xCoordinate;
+		int startY = knight.piece_yCoordinate;
+		
+		if(!checkValidMove(board.board, new_xCoordinate, new_yCoordinate)) {
+			return false;
+		}
+		
+		if(!board.board[new_xCoordinate][new_yCoordinate].empty) {
+			if(eating(board.board, new_xCoordinate, new_yCoordinate)) {
+				board.prepareUpdatingBoard(startX, startY, new_xCoordinate, new_yCoordinate);
+				knight.decrementAttackPath(board.board);
+				board.board[startX][startY].piece = null;
+				board.board[startX][startY].empty = true;
+				board.board[new_xCoordinate][new_yCoordinate].piece = knight; 
+				board.board[new_xCoordinate][new_yCoordinate].empty = false;
+				knight.setMoved(true);
+				knight.piece_xCoordinate = new_xCoordinate;
+				knight.piece_yCoordinate = new_yCoordinate;
+				knight.incrementAttackPath(board.board);
+				board.updateBoardAttackPaths(startX, startY, new_xCoordinate, new_yCoordinate);
+				return true;
+			}
+		}
+		else {
+			board.prepareUpdatingBoard(startX, startY, new_xCoordinate, new_yCoordinate);
+			knight.decrementAttackPath(board.board);
+			board.board[startX][startY].piece = null;
+			board.board[startX][startY].empty = true;
+			board.board[new_xCoordinate][new_yCoordinate].piece = knight; 
+			board.board[new_xCoordinate][new_yCoordinate].empty = false;
+			knight.setMoved(true);
+			knight.piece_xCoordinate = new_xCoordinate;
+			knight.piece_yCoordinate = new_yCoordinate;
+			knight.incrementAttackPath(board.board);
+			board.updateBoardAttackPaths(startX, startY, new_xCoordinate, new_yCoordinate);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean checkValidMove(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		/*moves are only taken in L shapes that consist of 3 hops; 2 hops horizontally or vertically followed
+		* by one hop in the opposite direction */
+		int rangex = this.piece_xCoordinate - new_xCoordinate;
+		int rangey = this.piece_yCoordinate - new_yCoordinate;
+		int totalMoves = Math.abs(rangex) + Math.abs(rangey);
+		if(totalMoves == 3 && (Math.abs(rangex) == 2 || Math.abs(rangey) == 2)) { 
+			
+			return true;
+		}
+		return false;
+	}
+		
+
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#incrementAttackPath(BoardCell[][] chessBoard)
+	 */	
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		Knight knight = this;
+		String currentPlayer = knight.getPlayer();
+		int knightX = knight.piece_xCoordinate;
+		int knightY = knight.piece_yCoordinate;
+		
+		if(knight.getAttackPathVisible()) {
+			return;
+		}
+		
+		if(currentPlayer.equals("white")) {
+		
+			if(knightX - 2 > -1 && knightY - 1 > -1) {				// Left down
+				chessBoard[knightX - 2][knightY - 1].whiteAttackCell++;
+			}
+			
+			if(knightX - 2 > -1 && knightY + 1 < 8) {				// Left up
+				chessBoard[knightX - 2][knightY + 1].whiteAttackCell++;
+			}
+			
+			if(knightX + 2 < 8 && knightY - 1 > -1) {				// Right down
+				chessBoard[knightX + 2][knightY - 1].whiteAttackCell++;
+			}
+			
+			if(knightX + 2 < 8 && knightY + 1 < 8) {				// Right Up
+				chessBoard[knightX + 2][knightY + 1].whiteAttackCell++;
+			}
+			
+			if(knightX - 1 > -1 && knightY + 2  < 8) {				// Up Left
+				chessBoard[knightX - 1][knightY + 2].whiteAttackCell++;
+			}
+			
+			if(knightX + 1 < 8 && knightY + 2  < 8) {				// Up Right
+				chessBoard[knightX + 1][knightY + 2].whiteAttackCell++;
+			}
+			
+			if(knightX - 1 > -1 && knightY - 2  > -1) {				// Down Left
+				chessBoard[knightX - 1][knightY - 2].whiteAttackCell++;
+			}
+			
+			if(knightX + 1 < 8 && knightY - 2 > -1) {				// Down Right
+				chessBoard[knightX + 1][knightY - 2].whiteAttackCell++;
+			}
+			knight.setAttackPathVisible(true);
+			return;
+		}
+		
+		if(currentPlayer.equals("black")) {
+			
+			if(knightX - 2 > -1 && knightY - 1 > -1) {				// Left down
+				chessBoard[knightX - 2][knightY - 1].blackAttackCell++;
+			}
+			
+			if(knightX - 2 > -1 && knightY + 1 < 8) {				// Left up
+				chessBoard[knightX - 2][knightY + 1].blackAttackCell++;
+			}
+			
+			if(knightX + 2 < 8 && knightY - 1 > -1) {				// Right down
+				chessBoard[knightX + 2][knightY - 1].blackAttackCell++;
+			}
+			
+			if(knightX + 2 < 8 && knightY + 1 < 8) {				// Right Up
+				chessBoard[knightX + 2][knightY + 1].blackAttackCell++;
+			}
+			
+			if(knightX - 1 > -1 && knightY + 2  < 8) {				// Up Left
+				chessBoard[knightX - 1][knightY + 2].blackAttackCell++;
+			}
+			
+			if(knightX + 1 < 8 && knightY + 2  < 8) {				// Up Right
+				chessBoard[knightX + 1][knightY + 2].blackAttackCell++;
+			}
+			
+			if(knightX - 1 > -1 && knightY - 2  > -1) {				// Down Left
+				chessBoard[knightX - 1][knightY - 2].blackAttackCell++;
+			}
+			
+			if(knightX + 1 < 8 && knightY - 2 > -1) {				// Down Right
+				chessBoard[knightX + 1][knightY - 2].blackAttackCell++;
+			}
+			knight.setAttackPathVisible(true);
+			return;
+		}
+		
+	}
+	/* (non-Javadoc)
+	 * @see chess.PieceAttribute#decrementAttackPath(BoardCell[][] chessBoard)
+	 */
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		Knight knight = this;
+		String currentPlayer = knight.getPlayer();
+		int knightX = knight.piece_xCoordinate;
+		int knightY = knight.piece_yCoordinate;
+		
+		if(!knight.getAttackPathVisible()) {
+			return;
+		}
+		
+		if(currentPlayer.equals("white")) {
+		
+			if(knightX - 2 > -1 && knightY - 1 > -1) {				// Left down
+				chessBoard[knightX - 2][knightY - 1].whiteAttackCell--;
+			}
+			
+			if(knightX - 2 > -1 && knightY + 1 < 8) {				// Left up
+				chessBoard[knightX - 2][knightY + 1].whiteAttackCell--;
+			}
+			
+			if(knightX + 2 < 8 && knightY - 1 > -1) {				// Right down
+				chessBoard[knightX + 2][knightY - 1].whiteAttackCell--;
+			}
+			
+			if(knightX + 2 < 8 && knightY + 1 < 8) {				// Right Up
+				chessBoard[knightX + 2][knightY + 1].whiteAttackCell--;
+			}
+			
+			if(knightX - 1 > -1 && knightY + 2  < 8) {				// Up Left
+				chessBoard[knightX - 1][knightY + 2].whiteAttackCell--;
+			}
+			
+			if(knightX + 1 < 8 && knightY + 2  < 8) {				// Up Right
+				chessBoard[knightX + 1][knightY + 2].whiteAttackCell--;
+			}
+			
+			if(knightX - 1 > -1 && knightY - 2  > -1) {				// Down Left
+				chessBoard[knightX - 1][knightY - 2].whiteAttackCell--;
+			}
+			
+			if(knightX + 1 < 8 && knightY - 2 > -1) {				// Down Right
+				chessBoard[knightX + 1][knightY - 2].whiteAttackCell--;
+			}
+			knight.setAttackPathVisible(false);
+			return;
+		}
+		
+		if(currentPlayer.equals("black")) {
+			
+			if(knightX - 2 > -1 && knightY - 1 > -1) {				// Left down
+				chessBoard[knightX - 2][knightY - 1].blackAttackCell--;
+			}
+			
+			if(knightX - 2 > -1 && knightY + 1 < 8) {				// Left up
+				chessBoard[knightX - 2][knightY + 1].blackAttackCell--;
+			}
+			
+			if(knightX + 2 < 8 && knightY - 1 > -1) {				// Right down
+				chessBoard[knightX + 2][knightY - 1].blackAttackCell--;
+			}
+			
+			if(knightX + 2 < 8 && knightY + 1 < 8) {				// Right Up
+				chessBoard[knightX + 2][knightY + 1].blackAttackCell--;
+			}
+			
+			if(knightX - 1 > -1 && knightY + 2  < 8) {				// Up Left
+				chessBoard[knightX - 1][knightY + 2].blackAttackCell--;
+			}
+			
+			if(knightX + 1 < 8 && knightY + 2  < 8) {				// Up Right
+				chessBoard[knightX + 1][knightY + 2].blackAttackCell--;
+			}
+			
+			if(knightX - 1 > -1 && knightY - 2  > -1) {				// Down Left
+				chessBoard[knightX - 1][knightY - 2].blackAttackCell--;
+			}
+			
+			if(knightX + 1 < 8 && knightY - 2 > -1) {				// Down Right
+				chessBoard[knightX + 1][knightY - 2].blackAttackCell--;
+			}
+			knight.setAttackPathVisible(false);
+			return;
+		}
+	}
+}

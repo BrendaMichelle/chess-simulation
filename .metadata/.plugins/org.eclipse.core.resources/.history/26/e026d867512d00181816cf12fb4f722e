@@ -1,0 +1,10 @@
+package chess;
+
+public class Pawn extends Piece {
+	//String whiteRep = "wp";
+	//String blackRep = "bp";
+	
+	Pawn (String player, String player_piece){
+		super(player, player_piece);
+	}
+}

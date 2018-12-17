@@ -1,0 +1,10 @@
+package chess;
+
+ublic class BoardCell {
+
+	boolean empty = true;
+	int whiteAttackCell;
+	int blackAttackCell;
+	Piece piece;
+    
+    }

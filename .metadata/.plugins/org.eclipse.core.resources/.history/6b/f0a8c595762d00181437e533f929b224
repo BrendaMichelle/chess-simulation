@@ -1,0 +1,160 @@
+package chess;
+
+public class Knight extends Piece {
+	String bpiece = "bN";
+	String wpiece = "wN";
+	/*public Knight(String player, String piece ) {
+		super(player, piece);
+	}*/
+	
+	public Knight(String player, String pieceName, int xCoordinate, int yCoordinate, BoardCell[][] chessBoard) {
+		super(player, pieceName);
+		this.piece_xCoordinate = xCoordinate;
+		this.piece_yCoordinate = yCoordinate;
+		
+		incrementAttackPath(chessBoard);
+		chessBoard[xCoordinate][yCoordinate].empty = false;
+	}
+	
+	
+	@Override
+	public boolean eating(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate)  {
+		if(chessBoard[new_xCoordinate][new_yCoordinate].empty == true ) {
+			return false; //nothing to eat ( :
+		}
+		//can only eat pieces on third cell move
+		Piece doomedPiece = chessBoard[new_xCoordinate][new_yCoordinate].piece;
+		String opposing_pieceOwner = doomedPiece.getPlayer();
+		String currentPlayer = getPlayer();
+		if(opposing_pieceOwner.equals(currentPlayer)) {
+			return false; //can't eat one's own piece
+		}
+		else {
+			System.out.println("Poor guy");
+			doomedPiece.decrementAttackPath(chessBoard);
+			chessBoard[new_xCoordinate][new_yCoordinate].piece = null; //& now we can insert the new player
+			chessBoard[new_xCoordinate][new_yCoordinate].empty = true;
+			return true;
+		}
+	
+	}
+		
+	
+	@Override
+	public boolean moving(Board board, int new_xCoordinate, int new_yCoordinate) {
+		Knight knight = this;
+		int startX = knight.piece_xCoordinate;
+		int startY = knight.piece_yCoordinate;
+		
+		if(!checkValidMove(board.board, new_xCoordinate, new_yCoordinate)) {
+			return false;
+		}
+		
+		if(!board.board[new_xCoordinate][new_yCoordinate].empty) {
+			if(eating(board.board, new_xCoordinate, new_yCoordinate)) {
+				board.prepareUpdatingBoard(startX, startY, new_xCoordinate, new_yCoordinate);
+				knight.decrementAttackPath(board.board);
+				board.board[startX][startY].piece = null;
+				board.board[startX][startY].empty = true;
+				board.board[new_xCoordinate][new_yCoordinate].piece = knight; 
+				board.board[new_xCoordinate][new_yCoordinate].empty = false;
+				knight.setMoved(true);
+				knight.piece_xCoordinate = new_xCoordinate;
+				knight.piece_yCoordinate = new_yCoordinate;
+				knight.incrementAttackPath(board.board);
+				board.updateBoardAttackPaths(startX, startY, new_xCoordinate, new_yCoordinate);
+				return true;
+			}
+		}
+		else {
+			board.prepareUpdatingBoard(startX, startY, new_xCoordinate, new_yCoordinate);
+			knight.decrementAttackPath(board.board);
+			board.board[startX][startY].piece = null;
+			board.board[startX][startY].empty = true;
+			board.board[new_xCoordinate][new_yCoordinate].piece = knight; 
+			board.board[new_xCoordinate][new_yCoordinate].empty = false;
+			knight.setMoved(true);
+			knight.piece_xCoordinate = new_xCoordinate;
+			knight.piece_yCoordinate = new_yCoordinate;
+			knight.incrementAttackPath(board.board);
+			board.updateBoardAttackPaths(startX, startY, new_xCoordinate, new_yCoordinate);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean checkValidMove(BoardCell[][] chessBoard, int new_xCoordinate, int new_yCoordinate) {
+		/*moves are only taken in L shapes that consist of 3 hops; 2 hops horizontally or vertically followed
+		* by one hop in the opposite direction */
+		int rangex = this.piece_xCoordinate - new_xCoordinate;
+		int rangey = this.piece_yCoordinate - new_yCoordinate;
+		int totalMoves = Math.abs(rangex) + Math.abs(rangey);
+		System.out.println(new_xCoordinate + " " + new_yCoordinate);
+		System.out.println(rangex + " " + rangey);
+		System.out.println("Total moves: "+ totalMoves);
+		if(totalMoves == 3 && (Math.abs(rangex) == 2 || Math.abs(rangey) == 2)) { 
+			
+			return true;
+		}
+		return false;
+	}
+		
+	@Override
+	public void incrementAttackPath(BoardCell[][] chessBoard) {
+		Knight knight = this;
+		
+		int knightX = knight.piece_xCoordinate;
+		int knightY = knight.piece_yCoordinate;
+		
+		if(knightX - 2 > -1 && knightY - 1 > -1) {				// Left down
+			
+		}
+		
+		if(knightX - 2 > -1 && knightY + 1 < 8) {				// Left up
+			
+		}
+		
+		if(knightX + 2 < 8 && knightY - 1 > -1) {				// Right down
+			
+		}
+		
+		if(knightX + 2 < 8 && knightY + 1 < 8) {				// Right Up
+			
+		}
+		
+		if(knightX - 1 > -1 && knightY + 2  < 8) {				// Up Left
+			
+		}
+		
+		if(knightX + 1 < 8 && knightY + 2  < 8) {				// Up Right
+			
+		}
+		
+		if(knightX - 1 > -1 && knightY - 2  > -1) {				// Down Left
+			
+		}
+		
+		if(knightX + 1 < 8 && knightY - 2 > -1) {				// Down Right
+			if(!chessBoard[knightX + 1][knightY - 2].empty) {	// Piece found
+				if(chessBoard[knightX + 1][knightY - 2].piece instanceof Knight) {	// Its a knight
+					String knightPiece = chessBoard[knightX + 1][knightY - 2].piece.getPlayer();
+					if(knightPiece.equals("black")) {										// Its an opposing knight
+						if(chessBoard[knightX + 1][knightY - 2].whiteAttackCell > 0) {			// It can be eaten
+							return false;
+						}
+						else {																// Cant save king
+							return true;
+						}
+					}
+				}
+			}
+		}
+		
+	}
+	@Override
+	public void decrementAttackPath(BoardCell[][] chessBoard) {
+		// TODO Auto-generated method stub
+		
+	}
+}

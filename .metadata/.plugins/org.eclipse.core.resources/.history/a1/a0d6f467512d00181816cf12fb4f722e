@@ -1,0 +1,16 @@
+/**
+ * 
+ */
+package chess;
+
+/**
+ * @author royjacome
+ *
+ */
+public interface PieceAttribute {
+	boolean eating(BoardCell[][] chessBoard, int x, int y);
+	boolean moving(BoardCell[][] chessBoard, int x, int y);
+	boolean checkValidMove(int x, int y);
+	void incrementAttackPath(BoardCell[][] chessBoard);
+	void decrementAttackPath(BoardCell[][] chessBoard);
+}
